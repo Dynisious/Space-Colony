@@ -1,36 +1,30 @@
-#include "..\Headers\Star System\Construct.h"
+#pragma once
 
-using namespace World_Module::Star_System;
+#include "..\Headers\Galactic\Sector\Solar\Construct.h"
 
-Construct::Construct()
-	: Construct(ResourceMap(0), FunctionTags(0)) {}
+World_Module::Galactic::Sector::Solar::Construct::Construct()
+	: Construct(tagSet(), resourceMap(), resourceMap(), false) {}
 
-Construct::Construct(const Construct& orig)
-	: Construct(orig.resourceChange, orig.functionality) {}
+World_Module::Galactic::Sector::Solar::Construct::Construct(const Construct & orig)
+	: Construct(orig.tags, orig.resourceShifts, orig.storage, orig.enabled) {}
 
-Construct::Construct(const World_Module::ResourceMap& rsrcChng, const FunctionTags& fnctnlty)
-	: resourceChange(rsrcChng), functionality(fnctnlty) {}
+World_Module::Galactic::Sector::Solar::Construct::Construct(tagSet tgs, resourceMap rsrcShfts, Space_Colony::TypeCounter strg, bool enbld)
+	: tags(tgs), resourceShifts(rsrcShfts), storage(strg), enabled(enbld) {}
 
-const World_Module::ResourceMap& Construct::get_resourceChange() const {
-	return resourceChange;
-}
-
-FunctionTags Construct::get_functionality() const {
-	return functionality;
-}
-
-Construct& Construct::operator=(const Construct& right) {
-	resourceChange = right.resourceChange;
-	functionality = right.functionality;
+World_Module::Galactic::Sector::Solar::Construct & World_Module::Galactic::Sector::Solar::Construct::operator=(const Construct & right) {
+	tags = right.tags;
+	resourceShifts = right.resourceShifts;
+	enabled = right.enabled;
 	return *this;
 }
 
-bool Construct::operator==(const Construct& right) const {
-	return resourceChange == right.resourceChange
-		&& functionality == right.functionality;
+bool World_Module::Galactic::Sector::Solar::Construct::operator==(const Construct & right) const {
+	return (this == &right)
+		|| (tags == right.tags
+			&& resourceShifts == right.resourceShifts
+			&& enabled == right.enabled);
 }
 
-bool Construct::operator!=(const Construct& right) const {
-	return resourceChange != right.resourceChange
-		|| functionality != right.functionality;
+bool World_Module::Galactic::Sector::Solar::Construct::operator!=(const Construct & right) const {
+	return !operator==(right);
 }

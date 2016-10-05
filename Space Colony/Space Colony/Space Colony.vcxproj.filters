@@ -1,14 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
@@ -18,31 +10,32 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Headers\Space Colony.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Shared Headers\Ships\Fleet.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Shared Headers\Ships\Ships.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Shared Headers\Ships\ShipTypeCount.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+    <ClCompile Include="Code Files\Space Colony.cpp" />
+    <ClCompile Include="Modules\Combat Module\Code Files\ShipStats.cpp" />
+    <ClCompile Include="Modules\Combat Module\Code Files\ShipTemplate.cpp" />
+    <ClCompile Include="Modules\Combat Module\Code Files\Combat Module.cpp" />
+    <ClCompile Include="Modules\Combat Module\Code Files\ShipTypeCollection.cpp" />
+    <ClCompile Include="Code Files\TypeCounter.cpp" />
+    <ClCompile Include="Modules\Combat Module\Code Files\CombatFleet.cpp" />
+    <ClCompile Include="Modules\Combat Module\Code Files\ConflictInstance.cpp" />
+    <ClCompile Include="Modules\World Module\Code Files\Planet.cpp" />
+    <ClCompile Include="Modules\World Module\Code Files\Construct.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Code Files\Space Colony.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Code Files\Fleet.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Code Files\ShipTypeCount.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Modules\World Module\World Module.vcxproj" />
+    <ClInclude Include="Modules\Combat Module\Headers\Combat Module.h" />
+    <ClInclude Include="Modules\Combat Module\Headers\Ship Types\ShipTypeCollection.h" />
+    <ClInclude Include="Modules\Combat Module\Headers\Ship Types\Ship Types.h" />
+    <ClInclude Include="Modules\Combat Module\Headers\Ship Types\ShipStats.h" />
+    <ClInclude Include="Modules\Combat Module\Headers\Ship Types\ShipTemplate.h" />
+    <ClInclude Include="Headers\Space Colony.h" />
+    <ClInclude Include="Modules\Combat Module\Headers\ConflictInstance.h" />
+    <ClInclude Include="Modules\Combat Module\Headers\CombatFleet.h" />
+    <ClInclude Include="Headers\TypeCounter.h" />
+    <ClInclude Include="Modules\World Module\Headers\World Module.h" />
+    <ClInclude Include="Modules\World Module\Headers\Galactic\Galactic.h" />
+    <ClInclude Include="Modules\World Module\Headers\Galactic\Sector\Sector.h" />
+    <ClInclude Include="Modules\World Module\Headers\Galactic\Sector\Solar\Solar.h" />
+    <ClInclude Include="Modules\World Module\Headers\Galactic\Sector\Solar\Construct.h" />
+    <ClInclude Include="Modules\World Module\Headers\Galactic\Sector\Solar\Planet.h" />
   </ItemGroup>
 </Project>

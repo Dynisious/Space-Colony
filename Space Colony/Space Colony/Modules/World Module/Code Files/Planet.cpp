@@ -1,80 +1,132 @@
-#include "..\Headers\Star System\Planet.h"
+#include "..\Headers\Galactic\Sector\Solar\Planet.h"
+#include <stdexcept>
 
-using namespace World_Module::Star_System;
+World_Module::Galactic::Sector::Solar::Planet::Planet()
+	: Planet(Space_Colony::TypeCounter(), Space_Colony::TypeCounter(), Space_Colony::Faction_Neutral, 0) {}
 
-Planet::Planet()
-	: Planet(0, 0, BoundedResourceMap(0), -1) {}
+World_Module::Galactic::Sector::Solar::Planet::Planet(const Planet & orig)
+	: Planet(orig.resources, orig.naturalStorage, orig.faction, orig.sitesCount, orig.sites) {}
 
-Planet::Planet(const Planet & orig)
-	: Planet(orig.sites, orig.satallites, orig.resourceDeposits, orig.faction) {}
+World_Module::Galactic::Sector::Solar::Planet::Planet(Space_Colony::TypeCounter rsrcs, Space_Colony::TypeCounter ntrlStrg, Space_Colony::faction_t fctn, __int32 stsCnt)
+	: Planet(rsrcs, ntrlStrg, fctn, stsCnt, ConstructMap(stsCnt)) {}
 
-Planet::Planet(const __int32 sts, const __int32 stlts, const BoundedResourceMap & rsrceDpsts, Space_Colony::faction_t fctn)
-	: Planet(SiteVector(sts), ConstructVector(stlts), rsrceDpsts, fctn) {}
+World_Module::Galactic::Sector::Solar::Planet::Planet(Space_Colony::TypeCounter rsrcs, Space_Colony::TypeCounter ntrlStrg, Space_Colony::faction_t fctn, __int32 stsCnt, ConstructMap sts)
+	: resources(rsrcs), naturalStorage(ntrlStrg), faction(fctn), sitesCount(stsCnt), sites(stsCnt) {}
 
-Planet::Planet(const SiteVector& sts, const ConstructVector& stlts, const BoundedResourceMap& rsrceDpsts, Space_Colony::faction_t fctn)
-	: sites(sts), satallites(stlts), resourceDeposits(rsrceDpsts), faction(fctn) {}
-
-void Planet::performTick() {
-	unsigned __int32 i;
-	bool error = false;
-	BoundedResource rsrc;
-	ResourceMap::const_iterator Resource_iter, Resource_end;
-	for (i = 0; i < sites.size(); i++)
-		if (sites[i]._state == ConstructionSite::state_city) {
-			for (Resource_iter = sites[i]._site.city._resourceChange.begin(),
-				 Resource_end = sites[i]._site.city._resourceChange.end();
-				 Resource_iter != Resource_end; Resource_iter++) {
-				rsrc = resourceDeposits[Resource_iter->first].safeAddition(Resource_iter->second, error);
-				if (error)
-					throw std::exception("The resource bounds were exceeded.");
-				else
-					resourceDeposits[Resource_iter->first] = rsrc;
-			}
-		} else if (sites[i]._state == ConstructionSite::state_city)
-			for (Resource_iter = sites[i]._site.city._resourceChange.begin(),
-				 Resource_end = sites[i]._site.city._resourceChange.end();
-				 Resource_iter != Resource_end; Resource_iter++) {
-				rsrc = resourceDeposits[Resource_iter->first].safeAddition(Resource_iter->second, error);
-				if (error)
-					throw std::exception("The resource bounds were exceeded.");
-				else
-					resourceDeposits[Resource_iter->first] = rsrc;
-			}
-
-		for (i = 0; i < satallites.size(); i++)
-			for (Resource_iter = satallites[i]._resourceChange.begin(),
-				 Resource_end = satallites[i]._resourceChange.end();
-				 Resource_iter != Resource_end; Resource_iter++) {
-				rsrc = resourceDeposits[Resource_iter->first].safeAddition(Resource_iter->second, error);
-				if (error)
-					throw std::exception("The resource bounds were exceeded.");
-				else
-					resourceDeposits[Resource_iter->first] = rsrc;
-			}
+World_Module::Galactic::Sector::Solar::Planet::const_iterator World_Module::Galactic::Sector::Solar::Planet::begin_ground() const {
+	return sites.begin();
 }
 
-Planet & Planet::operator=(const Planet & right) {
-	sites = right.sites;
-	satallites = right.satallites;
-	resourceDeposits = right.resourceDeposits;
+World_Module::Galactic::Sector::Solar::Planet::const_iterator World_Module::Galactic::Sector::Solar::Planet::end_ground() const {
+	return sites.end();
+}
+
+World_Module::Galactic::Sector::Solar::Planet::const_iterator World_Module::Galactic::Sector::Solar::Planet::begin_orbital() const {
+	return orbital.begin();
+}
+
+World_Module::Galactic::Sector::Solar::Planet::const_iterator World_Module::Galactic::Sector::Solar::Planet::end_orbital() const {
+	return orbital.end();
+}
+
+__int32 World_Module::Galactic::Sector::Solar::Planet::fillSite(const Construct & cnstrct) {
+	if (emptySites() == 0 && cnstrct.tags.count(WorldTags::Ground_Construct) != 0)
+		//There must be an empty site and it must be a ground construct being added.
+		return -1;
+	__int32 index(0);
+	for (; sites.count(index) != 0; index++);
+	//Find an index which is not in use.
+	sites[index] = cnstrct;
+	return index;
+}
+
+__int32 World_Module::Galactic::Sector::Solar::Planet::addOrbital(const Construct & cnstrct) {
+	if (cnstrct.tags.count(WorldTags::Orbital_Construct) != 0)
+		//It must be a ground construct being added.
+		return -1;
+	__int32 index(0);
+	for (; orbital.count(index) != 0; index++);
+	//Find an index which is not in use.
+	orbital[index] = cnstrct;
+	return index;
+}
+
+__int32 World_Module::Galactic::Sector::Solar::Planet::emptySites() const {
+	return sitesCount - sites.size();
+}
+
+bool World_Module::Galactic::Sector::Solar::Planet::demolishConstruct(const __int32 index, Construct * const cnstrct) {
+	if (exists(index))
+		if (cnstrct != nullptr)
+			*cnstrct = sites[index];
+	return sites.erase(index) != 0;
+}
+
+bool World_Module::Galactic::Sector::Solar::Planet::exists(const __int32 index) const {
+	return sites.count(index) == 0;
+}
+
+const World_Module::Galactic::Sector::Solar::Planet::ConstructMap & World_Module::Galactic::Sector::Solar::Planet::get_sites() const {
+	return sites;
+}
+
+const World_Module::Galactic::Sector::Solar::Planet::ConstructMap & World_Module::Galactic::Sector::Solar::Planet::get_orbital() const {
+	return orbital;
+}
+
+World_Module::tagSet World_Module::Galactic::Sector::Solar::Planet::get_tags() const {
+	tagSet res;
+	const_iterator iter, end;
+	for (iter = begin_ground(), end = end_ground(); iter != end; iter++)
+		//Get ground tags.
+		res.insert(iter->second.tags.begin(), iter->second.tags.end());
+	for (iter = begin_orbital(), end = end_orbital(); iter != end; iter++)
+		//Get orbital tags.
+		res.insert(iter->second.tags.begin(), iter->second.tags.end());
+	return res;
+}
+
+Space_Colony::TypeCounter World_Module::Galactic::Sector::Solar::Planet::get_totalStorage() const {
+	Space_Colony::TypeCounter res(naturalStorage);
+	const_iterator iter, end;
+	for (iter = begin_ground(), end = end_ground(); iter != end; iter++)
+		//Add the storage of each ground Construct onto the natural storage of
+		//the Planet.
+		res += iter->second.storage;
+	for (iter = begin_orbital(), end = end_orbital(); iter != end; iter++)
+		//Add the storage of each orbital Construct onto the cummulative storage.
+		res += iter->second.storage;
+	return res;
+}
+
+__int32 World_Module::Galactic::Sector::Solar::Planet::get_sitesCount() const {
+	return sitesCount;
+}
+
+void World_Module::Galactic::Sector::Solar::Planet::set_sitesCount(const __int32 vl) {
+	if (vl < sites.size())
+		throw std::out_of_range("Trying to set the number of possible sites to less than the number of filled sites.");
+	sitesCount = vl;
+}
+
+World_Module::Galactic::Sector::Solar::Planet & World_Module::Galactic::Sector::Solar::Planet::operator=(const Planet & right) {
+	resources = right.resources;
+	naturalStorage = right.naturalStorage;
 	faction = right.faction;
+	sites = right.sites;
+	sitesCount = right.sitesCount;
 	return *this;
 }
 
-bool Planet::operator==(const Planet & right) const {
-	if (this == &right)
-		return true;
-	return sites == right.sites
-		&& satallites == right.satallites
-		&& resourceDeposits == right.resourceDeposits
-		&& faction == right.faction;
+bool World_Module::Galactic::Sector::Solar::Planet::operator==(const Planet & right) const {
+	return (this == &right)
+		|| (resources == right.resources
+			&& naturalStorage == right.naturalStorage
+			&& faction == right.faction
+			&& sites == right.sites
+			&& sitesCount == right.sitesCount);
 }
 
-bool Planet::operator!=(const Planet & right) const {
-	if (this != &right)
-		return true;
-	return sites != right.sites
-		|| satallites != right.satallites
-		|| resourceDeposits != right.resourceDeposits
-		|| faction != right.faction;
+bool World_Module::Galactic::Sector::Solar::Planet::operator!=(const Planet & right) const {
+	return !operator==(right);
 }
