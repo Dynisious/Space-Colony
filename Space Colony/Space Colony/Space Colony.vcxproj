@@ -156,15 +156,18 @@
     <ClCompile Include="Modules\Combat Module\Code Files\ShipTemplate.cpp" />
     <ClCompile Include="Modules\Combat Module\Code Files\ShipTypeCollection.cpp" />
     <ClCompile Include="Code Files\TypeCounter.cpp" />
-    <ClCompile Include="Modules\Combat Module\Code Files\CombatFleet.cpp" />
     <ClCompile Include="Modules\Combat Module\Code Files\ConflictInstance.cpp" />
+    <ClCompile Include="Code Files\Fleet.cpp" />
     <ClCompile Include="Modules\World Module\Code Files\Construct.cpp" />
+    <ClCompile Include="Modules\World Module\Code Files\EconomicFleet.cpp" />
     <ClCompile Include="Modules\World Module\Code Files\Planet.cpp" />
+    <ClCompile Include="Modules\World Module\Code Files\StarCluster.cpp" />
+    <ClCompile Include="Modules\World Module\Code Files\StarSystem.cpp" />
+    <ClCompile Include="Modules\World Module\Code Files\World Module.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\Space Colony.h" />
     <ClInclude Include="Modules\Combat Module\Headers\Combat Module.h" />
-    <ClInclude Include="Modules\Combat Module\Headers\CombatFleet.h" />
     <ClInclude Include="Modules\Combat Module\Headers\ConflictInstance.h" />
     <ClInclude Include="Modules\Combat Module\Headers\Ship Types\Ship Types.h" />
     <ClInclude Include="Modules\Combat Module\Headers\Ship Types\ShipStats.h" />
@@ -172,10 +175,13 @@
     <ClInclude Include="Modules\Combat Module\Headers\Ship Types\ShipTypeCollection.h" />
     <ClInclude Include="Headers\TypeCounter.h" />
     <ClInclude Include="Modules\World Module\Headers\Galactic\Galactic.h" />
-    <ClInclude Include="Modules\World Module\Headers\Galactic\Sector\Sector.h" />
-    <ClInclude Include="Modules\World Module\Headers\Galactic\Sector\Solar\Construct.h" />
-    <ClInclude Include="Modules\World Module\Headers\Galactic\Sector\Solar\Planet.h" />
-    <ClInclude Include="Modules\World Module\Headers\Galactic\Sector\Solar\Solar.h" />
+    <ClInclude Include="Headers\Fleet.h" />
+    <ClInclude Include="Modules\World Module\Headers\Galactic\Solar\Construct.h" />
+    <ClInclude Include="Modules\World Module\Headers\Galactic\Solar\EconomicFleet.h" />
+    <ClInclude Include="Modules\World Module\Headers\Galactic\Solar\Planet.h" />
+    <ClInclude Include="Modules\World Module\Headers\Galactic\Solar\Solar.h" />
+    <ClInclude Include="Modules\World Module\Headers\Galactic\StarCluster.h" />
+    <ClInclude Include="Modules\World Module\Headers\Galactic\StarSystem.h" />
     <ClInclude Include="Modules\World Module\Headers\World Module.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

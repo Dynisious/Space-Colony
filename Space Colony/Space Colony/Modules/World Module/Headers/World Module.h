@@ -20,6 +20,6 @@ namespace World_Module {
 	A set of __int32 tags.*/
 	typedef std::unordered_set<WorldTags> tagSet;
 
-	void WorldModule_load();
+	__int32 WorldModule_load();
 
 };

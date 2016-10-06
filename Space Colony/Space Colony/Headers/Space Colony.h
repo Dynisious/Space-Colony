@@ -6,6 +6,7 @@ namespace Space_Colony {
 	typedef __int32 faction_t;
 	enum DefaultFactions {
 		Faction_Neutral,
+		Faction_Contested,
 		Faction_Max
 	};
 

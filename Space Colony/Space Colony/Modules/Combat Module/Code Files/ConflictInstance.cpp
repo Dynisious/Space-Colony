@@ -22,7 +22,7 @@ Combat_Module::ConflictInstance::ConflictInstance(const FleetMap & flts)
 			addFleet(*Fleet_iter);
 }
 
-void Combat_Module::ConflictInstance::addFleet(const CombatFleet & flt) {
+void Combat_Module::ConflictInstance::addFleet(const Space_Colony::Fleet & flt) {
 	fleets[flt.faction].push_back(flt);
 	engagedShips[flt.faction] += flt;
 	//Add the Fleets ships to the engaged ships.

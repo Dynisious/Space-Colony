@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Combat Module.h"
-#include "CombatFleet.h"
 #include "Ship Types\ShipTemplate.h"
+#include "..\..\..\Headers\Fleet.h"
 #include "..\..\..\Headers\TypeCounter.h"
 #include <list>
 #include <unordered_map>
@@ -14,7 +14,7 @@ namespace Combat_Module {
 	class ConflictInstance {
 	public:
 		typedef __int32 ConflictID;
-		typedef std::list<CombatFleet> FleetList;
+		typedef std::list<Space_Colony::Fleet> FleetList;
 		typedef std::unordered_map<Space_Colony::faction_t, Space_Colony::TypeCounter> CounterMap;
 		typedef std::unordered_map<Space_Colony::faction_t, FleetList> FleetMap;
 
@@ -25,7 +25,7 @@ namespace Combat_Module {
 
 		/*
 		Adds a CombatFleet and it's ships to the fight.*/
-		void addFleet(const CombatFleet& flt);
+		void addFleet(const Space_Colony::Fleet& flt);
 		/*
 		Performs a single iteration of the ConflictInstance.*/
 		__int32 iterate();
