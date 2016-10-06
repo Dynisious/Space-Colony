@@ -71,7 +71,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\danie_000\Documents\GitHub\Dyn_API\Dyn_API\Dyn_API\Exported Headers;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -160,9 +160,11 @@
     <ClCompile Include="Code Files\Fleet.cpp" />
     <ClCompile Include="Modules\World Module\Code Files\Construct.cpp" />
     <ClCompile Include="Modules\World Module\Code Files\EconomicFleet.cpp" />
+    <ClCompile Include="Modules\World Module\Code Files\Galaxy.cpp" />
     <ClCompile Include="Modules\World Module\Code Files\Planet.cpp" />
     <ClCompile Include="Modules\World Module\Code Files\StarCluster.cpp" />
     <ClCompile Include="Modules\World Module\Code Files\StarSystem.cpp" />
+    <ClCompile Include="Modules\World Module\Code Files\Transition.cpp" />
     <ClCompile Include="Modules\World Module\Code Files\World Module.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -182,6 +184,8 @@
     <ClInclude Include="Modules\World Module\Headers\Galactic\Solar\Solar.h" />
     <ClInclude Include="Modules\World Module\Headers\Galactic\StarCluster.h" />
     <ClInclude Include="Modules\World Module\Headers\Galactic\StarSystem.h" />
+    <ClInclude Include="Modules\World Module\Headers\Galaxy.h" />
+    <ClInclude Include="Modules\World Module\Headers\Transition.h" />
     <ClInclude Include="Modules\World Module\Headers\World Module.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

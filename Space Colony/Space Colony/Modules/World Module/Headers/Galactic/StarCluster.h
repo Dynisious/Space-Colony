@@ -29,8 +29,6 @@ namespace World_Module {
 
 		};
 
-		typedef std::unordered_map<__int32, StarCluster> StarMap;
-
 	}
 
 }

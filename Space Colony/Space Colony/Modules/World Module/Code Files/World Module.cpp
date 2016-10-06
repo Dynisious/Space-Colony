@@ -1,11 +1,16 @@
 #include "..\Headers\World Module.h"
-#include "..\Headers\Galactic\StarCluster.h"
+#include "..\Headers\Galaxy.h"
+#include "..\Headers\Transition.h"
+#include <list>
 
 namespace World_Module {
 
 	class WorldModule {
 	public:
-		Galactic::StarMap worldMap;
+		typedef std::list<Transition> TransitList;
+
+		Galaxy worldMap;
+		TransitList transitions;
 
 	};
 

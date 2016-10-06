@@ -58,6 +58,7 @@ __int32 World_Module::Galactic::Solar::Planet::emptySites() const {
 bool World_Module::Galactic::Solar::Planet::demolishConstruct(const __int32 index, Construct * const cnstrct) {
 	if (exists(index))
 		if (cnstrct != nullptr)
+			//There is a return address for the construct.
 			*cnstrct = sites[index];
 	return sites.erase(index) != 0;
 }

@@ -24,6 +24,8 @@
     <ClCompile Include="Modules\World Module\Code Files\StarSystem.cpp" />
     <ClCompile Include="Modules\World Module\Code Files\StarCluster.cpp" />
     <ClCompile Include="Modules\World Module\Code Files\EconomicFleet.cpp" />
+    <ClCompile Include="Modules\World Module\Code Files\Galaxy.cpp" />
+    <ClCompile Include="Modules\World Module\Code Files\Transition.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Modules\Combat Module\Headers\Combat Module.h" />
@@ -43,5 +45,7 @@
     <ClInclude Include="Modules\World Module\Headers\Galactic\Galactic.h" />
     <ClInclude Include="Modules\World Module\Headers\Galactic\StarCluster.h" />
     <ClInclude Include="Modules\World Module\Headers\Galactic\Solar\EconomicFleet.h" />
+    <ClInclude Include="Modules\World Module\Headers\Galaxy.h" />
+    <ClInclude Include="Modules\World Module\Headers\Transition.h" />
   </ItemGroup>
 </Project>

@@ -17,7 +17,7 @@ World_Module::Galactic::Solar::EconomicFleet & World_Module::Galactic::Solar::Ec
 
 bool World_Module::Galactic::Solar::EconomicFleet::operator==(const EconomicFleet & right) const {
 	return (this == &right)
-		&& (resources == right.resources
+		|| (resources == right.resources
 			&& resourcesCapacity == right.resourcesCapacity);
 }
 
