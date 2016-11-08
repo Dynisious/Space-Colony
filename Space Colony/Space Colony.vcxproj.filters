@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Headers\TypeCounter.h" />
+    <ClInclude Include="Headers\Space Colony.h" />
+    <ClInclude Include="Headers\ShipType.h" />
+    <ClInclude Include="Headers\Fleet.h" />
+    <ClInclude Include="Modules\World Module\Headers\World Module.h" />
+    <ClInclude Include="Modules\World Module\Headers\Galactic\Galactic.h" />
+    <ClInclude Include="Modules\World Module\Headers\Galactic\Planet.h" />
+    <ClInclude Include="Modules\World Module\Headers\Galactic\Planetary\Construct.h" />
+    <ClInclude Include="Modules\World Module\Headers\Galactic\Planetary\ConstructType.h" />
+    <ClInclude Include="Modules\World Module\Headers\Galactic\Planetary\Planetary.h" />
+    <ClInclude Include="Modules\World Module\Headers\Galactic\SolarSystem.h" />
+    <ClInclude Include="Modules\World Module\Headers\Galactic\StarSector.h" />
+    <ClInclude Include="Modules\World Module\Headers\Galaxy.h" />
+    <ClInclude Include="Headers\ResourceType.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Code Files\TypeCounter.cpp" />
+    <ClCompile Include="Code Files\ShipType.cpp" />
+    <ClCompile Include="Code Files\Fleet.cpp" />
+    <ClCompile Include="Code Files\Space Colony.cpp" />
+    <ClCompile Include="Modules\World Module\Code Files\ConstructType.cpp" />
+    <ClCompile Include="Modules\World Module\Code Files\Construct.cpp" />
+    <ClCompile Include="Modules\World Module\Code Files\Planet.cpp" />
+    <ClCompile Include="Modules\World Module\Code Files\SolarSystem.cpp" />
+    <ClCompile Include="Modules\World Module\Code Files\StarSector.cpp" />
+    <ClCompile Include="Code Files\ResourceType.cpp" />
+    <ClCompile Include="Modules\World Module\Code Files\Galaxy.cpp" />
+  </ItemGroup>
+</Project>
