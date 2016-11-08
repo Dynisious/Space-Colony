@@ -21,6 +21,8 @@ namespace Space_Colony {
 				StarSector(const StarSector &orig);
 				StarSector(const std::string &nm, const SystemVector &systms);
 
+				SystemVector & getSystems(const size_t index);
+				const SystemVector & getSystems(const size_t index) const;
 				SolarSystem & getSolarSystem(const size_t index);
 				const SolarSystem & getSolarSystem(const size_t index) const;
 				/*

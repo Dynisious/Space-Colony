@@ -21,7 +21,7 @@ namespace Space_Colony {
 				built on Planets.*/
 				class ConstructType {
 				public:
-					typedef std::unordered_set<__int32> ConstructTags;
+					typedef std::unordered_set<ConstructType_FunctionTags> ConstructTags;
 
 					ConstructType();
 					ConstructType(const ConstructType &orig);
@@ -85,7 +85,9 @@ namespace Space_Colony {
 					Ship_Construction = 3,
 					Orbital_Defence = 4,
 					Terestrial_Defence = 5,
-					maximum = 6
+					Agricultural = 6,
+					Constant_Drain = 7,
+					maximum = 8
 				};
 
 			}

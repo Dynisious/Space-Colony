@@ -27,55 +27,145 @@ Space_Colony::World_Module::Galacitc::Planet::Planet(const faction_type fctn, co
 													 const ConstructList & stlts)
 	: faction(fctn), name(nm), resources(rsrcs), naturalCapacity(ntrlCpcty), sites(bldngs), satellites(stlts) {}
 
-TypeCounter Space_Colony::World_Module::Galacitc::Planet::getResourceShift() const {
-	TypeCounter res;
-	for (auto iter(sites.begin()), end(sites.end()); iter != end; ++iter)
-		if (iter->TypeID != 0 && iter->active)
-			res += iter->getType().resourceShift;
-	for (auto iter(satellites.begin()), end(satellites.end()); iter != end; ++iter)
-		if (iter->active)
-			res += iter->getType().resourceShift;
-	return res;
+bool Space_Colony::World_Module::Galacitc::Planet::isSuperConstruct() const {
+	//Take the first site to compare the others against.
+	const Planetary::Construct &cmpr(sites.front());
+	if (Planetary::ConstructType_isLoaded(cmpr.typeID) && !cmpr.active) {
+		//The first site is filled and active.
+		for (auto iter(++sites.begin()), end(sites.end()); iter != end; ++iter)
+			//Iterate all other sites.
+			if (cmpr != *iter)
+				//The two sites are not the same, this is not a SuperConstruct Planet.
+				return false;
+	} else
+		//The first site is not filled or is not active, this is not a SuperConstruct Planet.
+		return false;
+	//This Planet hosts a SuperConstruct.
+	return true;
 }
 
-__int32 Space_Colony::World_Module::Galacitc::Planet::getResourceShift(const __int32 rsrc) const {
-	__int32 res(0);
-	for (auto iter(sites.begin()), end(sites.end()); iter != end; ++iter)
-		if (iter->TypeID != 0 && iter->active)
-			res += iter->getType().resourceShift.getCounter(rsrc);
-	for (auto iter(satellites.begin()), end(satellites.end()); iter != end; ++iter)
-		if (iter->active)
-			res += iter->getType().resourceShift.getCounter(rsrc);
+std::pair<Planetary::Construct *const, bool> Space_Colony::World_Module::Galacitc::Planet::findConstruct(const Planetary::Construct & cnstrct) {
+	if (Planetary::ConstructType_isLoaded(cnstrct.typeID)) {
+		//The passed Construct is loaded.
+		for (auto iter(sites.begin()), end(sites.end()); iter != end; ++iter)
+			//Iterate all the sites.
+			if (cnstrct == *iter)
+				//The Construct has been found, return it's pointer.
+				return std::pair<Planetary::Construct *const, bool>(&*iter, true);
+		for (auto iter(satellites.begin()), end(satellites.end()); iter != end; ++iter)
+			//Iterate all the satallites.
+			if (cnstrct == *iter)
+				//The Construct has been found, return it's pointer.
+				return std::pair<Planetary::Construct *const, bool>(&*iter, true);
+	}
+	//The Construct is not a part of this Planet, return nullptr.
+	return std::pair<Planetary::Construct *const, bool>(nullptr, false);
+}
+
+std::pair<const Planetary::Construct *const, bool> Space_Colony::World_Module::Galacitc::Planet::findConstruct(const Planetary::Construct & cnstrct) const {
+	if (Planetary::ConstructType_isLoaded(cnstrct.typeID)) {
+		//The passed Construct is loaded.
+		for (auto iter(sites.begin()), end(sites.end()); iter != end; ++iter)
+			//Iterate all the sites.
+			if (cnstrct == *iter)
+				//The Construct has been found, return it's pointer.
+				return std::pair<const Planetary::Construct *const, bool>(&*iter, true);
+		for (auto iter(satellites.begin()), end(satellites.end()); iter != end; ++iter)
+			//Iterate all the satallites.
+			if (cnstrct == *iter)
+				//The Construct has been found, return it's pointer.
+				return std::pair<const Planetary::Construct *const, bool>(&*iter, true);
+	}
+	//The Construct is not a part of this Planet, return nullptr.
+	return std::pair<const Planetary::Construct *const, bool>(nullptr, false);
+}
+
+Planet::ConstructList Space_Colony::World_Module::Galacitc::Planet::getConstructsByTags(
+	const Planetary::ConstructType::ConstructTags & tags, const Planetary::ConstructType::ConstructTags & exclude) const {
+	ConstructList res;
+	for (auto iter(sites.begin()), end(sites.end()); iter != end; ++iter) {
+		bool load(true);
+		for (auto tag_iter(tags.begin()), tag_end(tags.end()); tag_iter != tag_end; ++tag_iter)
+			//Check all include tags.
+			if (iter->getType().tags.count(*tag_iter) == 0) {
+				//This tag is not included.
+				load = false;
+				goto LoadSite;
+			}
+		for (auto exclude_iter(tags.begin()), exclude_end(tags.end()); exclude_iter != exclude_end; ++exclude_iter)
+			//Check all include tags.
+			if (iter->getType().tags.count(*exclude_iter) != 0) {
+				//This tag is not included.
+				load = false;
+				goto LoadSite;
+			}
+LoadSite:
+		if (load)
+			res.push_back(*iter);
+	}
+	for (auto iter(satellites.begin()), end(satellites.end()); iter != end; ++iter) {
+		bool load(true);
+		for (auto tag_iter(tags.begin()), tag_end(tags.end()); tag_iter != tag_end; ++tag_iter)
+			//Check all include tags.
+			if (iter->getType().tags.count(*tag_iter) == 0) {
+				//This tag is not included.
+				load = false;
+				goto LoadSatallite;
+			}
+		for (auto exclude_iter(tags.begin()), exclude_end(tags.end()); exclude_iter != exclude_end; ++exclude_iter)
+			//Check all include tags.
+			if (iter->getType().tags.count(*exclude_iter) != 0) {
+				//This tag is not included.
+				load = false;
+				goto LoadSatallite;
+			}
+LoadSatallite:
+		if (load)
+			res.push_back(*iter);
+	}
 	return res;
 }
 
 Planetary::ConstructType::ConstructTags Space_Colony::World_Module::Galacitc::Planet::getTags() const {
 	Planetary::ConstructType::ConstructTags res;
 	for (auto iter(sites.begin()), end(sites.end()); iter != end; ++iter)
-		if (iter->TypeID != 0 && iter->active)
+		//Iterate all sites.
+		if (iter->typeID != 0 && iter->active)
+			//The site is filled and active, add the tags to the result set.
 			res.insert(iter->getType().tags.begin(), iter->getType().tags.end());
 	for (auto iter(satellites.begin()), end(satellites.end()); iter != end; ++iter)
+		//Iterate all satallites.
 		if (iter->active)
+			//The satallite is active, add the tags to the result set.
 			res.insert(iter->getType().tags.begin(), iter->getType().tags.end());
 	return res;
 }
 
 TypeCounter Space_Colony::World_Module::Galacitc::Planet::getResourceCapacity() const {
+	//Get the natural resource capacity of this Planet.
 	TypeCounter res(naturalCapacity);
 	for (auto iter(sites.begin()), end(sites.end()); iter != end; ++iter)
-		if (iter->TypeID != 0)
+		//Iterate all sites.
+		if (iter->typeID != 0)
+			//The site is filled, add it's capacity to the result.
 			res += iter->getType().getResourceCapacity();
 	for (auto iter(satellites.begin()), end(satellites.end()); iter != end; ++iter)
+		//Iterate and accumulate the capacity of all the satallites to the result.
 		res += iter->getType().getResourceCapacity();
 	return res;
 }
 
 size_t Space_Colony::World_Module::Galacitc::Planet::getResourceCapacity(const __int32 rsrc) const {
+	//Get the natural resource capacity of this Planet for the type.
 	size_t res(naturalCapacity.getCounter(rsrc));
 	for (auto iter(sites.begin()), end(sites.end()); iter != end; ++iter)
-		if (iter->TypeID != 0)
+		//Iterate all sites.
+		if (iter->typeID != 0)
+			//The site is filled, add it's capacity to the result for the type.
 			res += iter->getType().getResourceCapacity().getCounter(rsrc);
 	for (auto iter(satellites.begin()), end(satellites.end()); iter != end; ++iter)
+		//Iterate and accumulate the capacity of all the satallites to the
+		//result for the type.
 		res += iter->getType().getResourceCapacity().getCounter(rsrc);
 	return res;
 }
@@ -102,12 +192,21 @@ size_t Space_Colony::World_Module::Galacitc::Planet::setResources(const __int32 
 	return res;
 }
 
+TypeCounter Space_Colony::World_Module::Galacitc::Planet::incResources(TypeCounter rsrcs) {
+	return setResources(rsrcs += resources);
+}
+
+size_t Space_Colony::World_Module::Galacitc::Planet::incResources(const __int32 rsrcs, const size_t val) {
+	return setResources(rsrcs, resources.getCounter(rsrcs) + val);
+}
+
 const Planet::ConstructVector & Space_Colony::World_Module::Galacitc::Planet::getSites() const {
 	return sites;
 }
 
 bool Space_Colony::World_Module::Galacitc::Planet::isFilled(const size_t index) const {
-	return sites[index].TypeID != 0;
+	//The site is filled.
+	return sites[index].typeID != 0;
 }
 
 Planetary::Construct & Space_Colony::World_Module::Galacitc::Planet::getSite(const size_t index) {

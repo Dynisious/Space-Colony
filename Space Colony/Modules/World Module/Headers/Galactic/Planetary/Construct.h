@@ -23,7 +23,7 @@ namespace Space_Colony {
 
 					/*
 					An ID for the ConstructType which represents this Construct.*/
-					__int32 TypeID;
+					__int32 typeID;
 					/*
 					True if the Construct is currently active and is producing a change in resources.*/
 					bool active;

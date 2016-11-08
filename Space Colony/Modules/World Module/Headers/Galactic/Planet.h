@@ -13,7 +13,7 @@ namespace Space_Colony {
 	namespace World_Module {
 
 		namespace Galacitc {
-			
+
 			/*
 			A Planet has a collection of resource and can support a set number
 			of Constructs on it's surface or any number in it's orbit.*/
@@ -33,13 +33,19 @@ namespace Space_Colony {
 					   const ConstructVector & bldngs, const ConstructList & stlts);
 
 				/*
-				Returns the shift in resources produced by the Constructs
-				on this Planet.*/
-				TypeCounter getResourceShift() const;
+				True if the Planet is populated by a Super Construct.*/
+				bool isSuperConstruct() const;
 				/*
-				Returns the shift in resources produced by the Constructs
-				on this Planet for this type of resource.*/
-				__int32 getResourceShift(const __int32 rsrc) const;
+				Returns an iterator to the construct and True if it was found.*/
+				std::pair<Planetary::Construct *const, bool> findConstruct(const Planetary::Construct &cnstrct);
+				/*
+				Returns an iterator to the construct and True if it was found.*/
+				std::pair<const Planetary::Construct *const, bool> findConstruct(const Planetary::Construct &cnstrct) const;
+				/*
+				Returns all the Constructs which are active and whose types
+				have and exclude the passed tags.*/
+				ConstructList getConstructsByTags(const Planetary::ConstructType::ConstructTags &tags, 
+												  const Planetary::ConstructType::ConstructTags &exclude) const;
 				/*
 									Returns the combined tags of all the Constructs on this Planet.*/
 				Planetary::ConstructType::ConstructTags getTags() const;
@@ -52,6 +58,8 @@ namespace Space_Colony {
 				const TypeCounter & getResources() const;
 				TypeCounter setResources(const TypeCounter &rsrcs);
 				size_t setResources(const __int32 rsrcs, const size_t val);
+				TypeCounter incResources(TypeCounter rsrcs);
+				size_t incResources(const __int32 rsrcs, const size_t val);
 				const ConstructVector & getSites() const;
 				/*
 				True if the passed index is filled.*/

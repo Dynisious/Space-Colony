@@ -68,6 +68,10 @@ namespace Space_Colony {
 		TypeCounter operator-() const;
 		TypeCounter & operator-=(const TypeCounter &right);
 		TypeCounter operator-(const TypeCounter &right) const;
+		TypeCounter & operator*=(const double right);
+		TypeCounter operator*(const double right) const;
+		TypeCounter & operator/=(const double right);
+		TypeCounter operator/(const double right) const;
 
 		operator const CounterMap &() const;
 		explicit operator CounterMap () const;

@@ -14,6 +14,29 @@ Space_Colony::Fleet::Fleet(const Fleet & orig, const faction_type fctn)
 Space_Colony::Fleet::Fleet(const faction_type fctn, const TypeCounter & shps, const TypeCounter & crg, const std::string & nm)
 	: name(nm), faction(fctn), ships(shps), cargo(crg) {}
 
+TypeCounter Space_Colony::Fleet::getShipsByTags(const ShipType::RollTagSet & tags, const ShipType::RollTagSet & exclude) const {
+	TypeCounter res(ships);
+	for (auto iter(ships.begin()), end(ships.end()); iter != end; ++iter) {
+		for (auto tag_iter(tags.begin()), tag_end(tags.end()); tag_iter != tag_end; ++tag_iter)
+			//Check all include tags.
+			if (ShipType_get(iter->first).world.rollTags.count(*tag_iter) == 0) {
+				//This tag is not included.
+				res.setCounter(iter->first, 0);
+				break;
+			}
+		if (res.getCounter(iter->first) == 0)
+			//This type has already been removed.
+			for (auto exclude_iter(tags.begin()), exclude_end(tags.end()); exclude_iter != exclude_end; ++exclude_iter)
+				//Check all include tags.
+				if (ShipType_get(iter->first).world.rollTags.count(*exclude_iter) != 0) {
+					//This tag is not included.
+					res.setCounter(iter->first, 0);
+					break;
+				}
+	}
+	return res;
+}
+
 const TypeCounter & Space_Colony::Fleet::getShips() const {
 	return ships;
 }
@@ -41,12 +64,16 @@ size_t Space_Colony::Fleet::setShip(const __int32 type, const size_t val, size_t
 		if ((getCargoCapacity() + (ShipType_get(type).world.cargo_capacity * ((( __int32 ) val) - res))) < cargo.sum())
 			//The new capacity is less than the sum of the cargo
 			throw std::exception("New ships would cause cargo capacity to exceed.");
+		//Calculate the amount of fuel the removed Ships take with them.
 		size_t retFuel(fuel * ShipType_get(type).world.fuel_capacity
 					   * (res - val) / getFuelCapacity());
 		if (returned_fuel != nullptr)
+			//Return the fuel.
 			*returned_fuel = retFuel;
+		//Remove the fuel.
 		fuel -= retFuel;
 	}
+	//Set the counter for the ShipType.
 	ships.setCounter(type, val);
 	return res;
 }
@@ -58,14 +85,18 @@ double Space_Colony::Fleet::getRange() const {
 ShipType::RollTagSet Space_Colony::Fleet::getRollTags() const {
 	ShipType::RollTagSet res;
 	for (TypeCounter::const_iterator iter(ships.begin()), end(ships.end()); iter != end; ++iter)
+		//Iterate over all counters and add their tags to the return set.
 		res.insert(ShipType_get(iter->first).world.rollTags.begin(), ShipType_get(iter->first).world.rollTags.end());
 	return res;
 }
 
 double Space_Colony::Fleet::getFuelEffeciency() const {
 	double res(0);
-	size_t shipsSum(ships.sum());
+	//The total number of Ships in this Fleet.
+	double shipsSum(ships.sum());
 	for (TypeCounter::const_iterator iter(ships.begin()), end(ships.end()); iter != end; ++iter)
+		//Iterate each ShipType and add it's fuel efficiency proportional
+		//to it's proportion of the Fleet.
 		res += ShipType_get(iter->first).world.fuel_efficiency * iter->second / shipsSum;
 	return res;
 }
@@ -73,6 +104,7 @@ double Space_Colony::Fleet::getFuelEffeciency() const {
 size_t Space_Colony::Fleet::getFuelCapacity() const {
 	size_t res(0);
 	for (TypeCounter::const_iterator iter(ships.begin()), end(ships.end()); iter != end; ++iter)
+		//Iterate each ShipType and add the fuel capacity of all the ships of that type.
 		res += ShipType_get(iter->first).world.fuel_capacity * iter->second;
 	return res;
 }
@@ -96,6 +128,7 @@ size_t Space_Colony::Fleet::incFuel(__int32 fl) {
 size_t Space_Colony::Fleet::getCargoCapacity() const {
 	size_t res(0);
 	for (TypeCounter::const_iterator iter(ships.begin()), end(ships.end()); iter != end; ++iter)
+		//Iterate each ShipType and add the cargo capacity of all the ships of that type.
 		res += ShipType_get(iter->first).world.cargo_capacity * iter->second;
 	return res;
 }
@@ -103,6 +136,7 @@ size_t Space_Colony::Fleet::getCargoCapacity() const {
 size_t Space_Colony::Fleet::getCargoVolume() const {
 	size_t res(0);
 	for (auto iter(cargo.begin()), end(cargo.end()); iter != end; ++iter)
+		//Iterate each ResourceType and add the volume of all the cargo of that type.
 		res += ResourceType_get(iter->first).volume * iter->second;
 	return res;
 }
@@ -110,6 +144,7 @@ size_t Space_Colony::Fleet::getCargoVolume() const {
 size_t Space_Colony::Fleet::getCargoMass() const {
 	size_t res(0);
 	for (auto iter(cargo.begin()), end(cargo.end()); iter != end; ++iter)
+		//Iterate each ResourceType and add the mass of all the cargo of that type.
 		res += ResourceType_get(iter->first).mass * iter->second;
 	return res;
 }
@@ -117,7 +152,9 @@ size_t Space_Colony::Fleet::getCargoMass() const {
 size_t Space_Colony::Fleet::getFleetMass() const {
 	size_t res(0);
 	for (auto iter(ships.begin()), end(ships.end()); iter != end; ++iter)
+		//Iterate each ShipType and add the mass of all the ships of that type.
 		res += ShipType_get(iter->first).world.mass * iter->second;
+	//Return the mass of all the Ships and the cargo combined.
 	return res + getCargoMass();
 }
 
@@ -129,6 +166,7 @@ TypeCounter Space_Colony::Fleet::setCargo(const TypeCounter & crg) {
 	TypeCounter res(cargo);
 	cargo = crg;
 	if (getCargoVolume() > getCargoCapacity()) {
+		//Reset the cargo.
 		cargo = res;
 		throw std::exception("The new cargo exceeds the capacity of the Fleet.");
 	}
@@ -137,8 +175,10 @@ TypeCounter Space_Colony::Fleet::setCargo(const TypeCounter & crg) {
 
 size_t Space_Colony::Fleet::setCargo(const __int32 crg, const __int32 vl) {
 	size_t res(cargo.getCounter(crg));
+	//Set the new cargo.
 	cargo.setCounter(crg, vl);
 	if (getCargoVolume() > getCargoCapacity()) {
+		//Reset the cargo.
 		cargo.setCounter(crg, res);
 		throw std::exception("The new cargo exceeds the capacity of the Fleet.");
 	}

@@ -94,7 +94,9 @@ ConstructType_ID Space_Colony::World_Module::Galacitc::Planetary::ConstructType_
 
 bool Space_Colony::World_Module::Galacitc::Planetary::ConstructType_unload(ConstructType_ID id) {
 	if (ConstructType_isLoaded(id)) {
+		//The type is loaded, unload it.
 		ConstructType_All_IDs.erase(id);
+		//Delete the ConstructType.
 		delete ( ConstructType_Pointer ) id;
 		return true;
 	} else {

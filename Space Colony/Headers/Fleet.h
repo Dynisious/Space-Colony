@@ -19,6 +19,9 @@ namespace Space_Colony {
 		Fleet(const faction_type fctn, const TypeCounter & shps, const TypeCounter & crg, const std::string & nm);
 
 		/*
+		Returns the ship counters whose types have and exclude the passed tags.*/
+		TypeCounter getShipsByTags(const ShipType::RollTagSet &tags, const ShipType::RollTagSet &exclude) const;
+		/*
 		Returns all the ship counters for this Fleet.*/
 		const TypeCounter & getShips() const;
 		/*

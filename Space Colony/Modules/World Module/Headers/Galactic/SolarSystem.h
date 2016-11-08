@@ -40,8 +40,8 @@ namespace Space_Colony {
 				SolarSystems for the resource type.*/
 				size_t getResource(const __int32 rsrc) const;
 				/*
-				Returns all Fleets which contain ships whose types have the passed tags.*/
-				FleetList getFleetsByTags(const ShipType::RollTagSet &tags) const;
+				Returns all Fleets which contain ships whose types have and exclude the passed tags.*/
+				FleetList getFleetsByTags(const ShipType::RollTagSet &tags, const ShipType::RollTagSet &exclude) const;
 				/*
 				Adds the passed Fleet to the SolarSystem.*/
 				void addFleet(const Fleet &flt);

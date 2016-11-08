@@ -102,14 +102,16 @@ const ShipType & Space_Colony::ShipType_get(ShipType_ID id) {
 ShipType_ID Space_Colony::ShipType_load(const ShipType & type) {
 	for (auto iter(ShipType_All_IDs.begin()), end(ShipType_All_IDs.end()); iter != end; ++iter)
 		if (type == *( ShipType_Pointer ) *iter)
-			//This type is already loaded.
+			//This type is already loaded, return it's ID.
 			return ( ShipType_ID ) *iter;
 	return *ShipType_All_IDs.insert((ShipType_ID) new ShipType(type)).first;
 }
 
 bool Space_Colony::ShipType_unload(ShipType_ID id) {
 	if (ShipType_isLoaded(id)) {
+		//The id is loaded, unload it.
 		ShipType_All_IDs.erase(id);
+		//Delete the ShipType.
 		delete ( ShipType_Pointer ) id;
 		return true;
 	} else {

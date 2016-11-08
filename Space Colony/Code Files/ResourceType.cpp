@@ -41,14 +41,16 @@ const ResourceType & Space_Colony::ResourceType_get(ResourceType_ID id) {
 ResourceType_ID Space_Colony::ResourceType_load(const ResourceType & type) {
 	for (auto iter(ResourceType_All_IDs.begin()), end(ResourceType_All_IDs.end()); iter != end; ++iter)
 		if (type == *( ResourceType_Pointer ) *iter)
-			//This type is already loaded.
+			//This type is already loaded, return it's ID.
 			return ( ResourceType_ID ) *iter;
 	return *ResourceType_All_IDs.insert((ResourceType_ID) new ResourceType(type)).first;
 }
 
 bool Space_Colony::ResourceType_unload(ResourceType_ID id) {
 	if (ResourceType_isLoaded(id)) {
+		//The ID is already loaded, unload it.
 		ResourceType_All_IDs.erase(id);
+		//Delete the ResourceType.
 		delete ( ResourceType_Pointer ) id;
 		return true;
 	} else {
