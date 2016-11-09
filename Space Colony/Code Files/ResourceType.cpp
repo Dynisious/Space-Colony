@@ -11,6 +11,42 @@ Space_Colony::ResourceType::ResourceType(const ResourceType & orig)
 Space_Colony::ResourceType::ResourceType(const size_t ms, const size_t vlm)
 	: mass(ms), volume(vlm) {}
 
+std::unordered_set<ResourceType *> Pooled_All_ResourceTypes;
+
+ResourceRef Space_Colony::ResourceType::create() {
+	ResourceRef res(new ResourceType());
+	Pooled_All_ResourceTypes.insert(res);
+	return res;
+}
+
+ResourceRef Space_Colony::ResourceType::create(const ResourceType & orig) {
+	ResourceRef res(new ResourceType(orig));
+	Pooled_All_ResourceTypes.insert(res);
+	return res;
+}
+
+ResourceRef Space_Colony::ResourceType::create(const size_t ms, const size_t vlm) {
+	ResourceRef res(new ResourceType(ms, vlm));
+	Pooled_All_ResourceTypes.insert(res);
+	return res;
+}
+
+bool Space_Colony::ResourceType::isLoaded(ResourceType *const id) {
+	return Pooled_All_ResourceTypes.count(id) != 0;
+}
+
+bool Space_Colony::ResourceType::unloadType(ResourceType *const id) {
+	if (isLoaded(id)) {
+		//The ID is already loaded, unload it.
+		Pooled_All_ResourceTypes.erase(id);
+		//Delete the ResourceType.
+		delete id;
+		return true;
+	} else {
+		return false;
+	}
+}
+
 ResourceType & Space_Colony::ResourceType::operator=(const ResourceType & right) {
 	mass = right.mass;
 	volume = right.volume;
@@ -26,34 +62,72 @@ bool Space_Colony::ResourceType::operator!=(const ResourceType & right) const {
 	return !operator==(right);
 }
 
-std::unordered_set<ResourceType_ID> ResourceType_All_IDs;
+Space_Colony::ResourceRef::ResourceRef()
+	: instance(nullptr) {}
 
-bool Space_Colony::ResourceType_isLoaded(ResourceType_ID id) {
-	return ResourceType_All_IDs.count(id) != 0;
+Space_Colony::ResourceRef::ResourceRef(ResourceType * const orig)
+	: instance(orig) {
+	if (!check())
+		throw std::exception("The pointer is invalid.");
 }
 
-const ResourceType & Space_Colony::ResourceType_get(ResourceType_ID id) {
-	if (!ResourceType_isLoaded(id))
-		throw std::runtime_error("The passed ID is not a loaded ID.");
-	return *( ResourceType_Pointer ) id;
+bool Space_Colony::ResourceRef::check() const {
+	return ResourceType::isLoaded(instance);
 }
 
-ResourceType_ID Space_Colony::ResourceType_load(const ResourceType & type) {
-	for (auto iter(ResourceType_All_IDs.begin()), end(ResourceType_All_IDs.end()); iter != end; ++iter)
-		if (type == *( ResourceType_Pointer ) *iter)
-			//This type is already loaded, return it's ID.
-			return ( ResourceType_ID ) *iter;
-	return *ResourceType_All_IDs.insert((ResourceType_ID) new ResourceType(type)).first;
+void Space_Colony::ResourceRef::unbind() {
+	instance = nullptr;
 }
 
-bool Space_Colony::ResourceType_unload(ResourceType_ID id) {
-	if (ResourceType_isLoaded(id)) {
-		//The ID is already loaded, unload it.
-		ResourceType_All_IDs.erase(id);
-		//Delete the ResourceType.
-		delete ( ResourceType_Pointer ) id;
-		return true;
-	} else {
-		return false;
-	}
+ResourceRef & Space_Colony::ResourceRef::operator=(ResourceType * const right) {
+	if (!ResourceType::isLoaded(right))
+		throw std::exception("The pointer is invalid.");
+	instance = right;
+	return *this;
+}
+
+bool Space_Colony::ResourceRef::operator==(ResourceType * const right) const {
+	if (!check() || !ResourceType::isLoaded(right))
+		throw std::exception("The pointer is invalid.");
+	return instance == right;
+}
+
+bool Space_Colony::ResourceRef::operator!=(ResourceType * const right) const {
+	return !operator==(right);
+}
+
+ResourceType & Space_Colony::ResourceRef::operator*() {
+	if (!check())
+		throw std::exception("The pointer is invalid.");
+	return *instance;
+}
+
+const ResourceType & Space_Colony::ResourceRef::operator*() const {
+	if (!check())
+		throw std::exception("The pointer is invalid.");
+	return *instance;
+}
+
+ResourceType * Space_Colony::ResourceRef::operator->() {
+	if (!check())
+		throw std::exception("The pointer is invalid.");
+	return instance;
+}
+
+const ResourceType * Space_Colony::ResourceRef::operator->() const {
+	if (!check())
+		throw std::exception("The pointer is invalid.");
+	return instance;
+}
+
+Space_Colony::ResourceRef::operator ResourceType*const() {
+	if (!check())
+		throw std::exception("The pointer is invalid.");
+	return instance;
+}
+
+Space_Colony::ResourceRef::operator const ResourceType*const() const {
+	if (!check())
+		throw std::exception("The pointer is invalid.");
+	return instance;
 }

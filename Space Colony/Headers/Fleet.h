@@ -6,40 +6,11 @@
 #include "ResourceType.h"
 #include <string>
 #include <stdexcept>
+#include <xhash>
 
 namespace Space_Colony {
 
-	class Fleet;
-
-	/*
-	Accessed like a pointer this class safely refers to an instance of a Fleet
-	which is stored in the shared pool.*/
-	class FleetRef {
-	public:
-		FleetRef();
-		FleetRef(Fleet *const inst);
-
-		/*
-		True if the Reference points to a true instance of a Fleet.*/
-		bool check() const;
-
-		FleetRef & operator=(Fleet *const right);
-		bool operator==(Fleet *const right) const;
-		bool operator!=(Fleet *const right) const;
-		Fleet & operator*();
-		const Fleet & operator*() const;
-		Fleet * operator->();
-		const Fleet * operator->() const;
-
-		operator Fleet *();
-		operator const Fleet *() const;
-
-	private:
-		/*
-		A pointer to a Fleet instance.*/
-		Fleet *instance;
-
-	};
+	class FleetRef;
 
 	/*
 	A Fleet is a collection of counters of different Ship Types.*/
@@ -50,11 +21,11 @@ namespace Space_Colony {
 		Fleet(const Fleet &orig, const faction_type fctn);
 		Fleet(const faction_type fctn, const TypeCounter & shps, const TypeCounter & crg, const std::string & nm);
 
-		static FleetRef createPooled();
-		static FleetRef createPooled(const Fleet &orig);
-		static FleetRef createPooled(const Fleet &orig, const faction_type fctn);
-		static FleetRef createPooled(const faction_type fctn, const TypeCounter & shps,
-									 const TypeCounter & crg, const std::string & nm);
+		static FleetRef create();
+		static FleetRef create(const Fleet &orig);
+		static FleetRef create(const Fleet &orig, const faction_type fctn);
+		static FleetRef create(const faction_type fctn, const TypeCounter & shps,
+							   const TypeCounter & crg, const std::string & nm);
 		static bool isPooled(Fleet *const ptr);
 		static bool deleteFleet(Fleet *const ptr);
 
@@ -138,6 +109,53 @@ namespace Space_Colony {
 		A count of the quantity of different types of cargo contained within
 		this Fleet.*/
 		TypeCounter cargo;
+
+	};
+
+	/*
+	Accessed like a pointer this class safely refers to an instance of a Fleet
+	which is stored in the shared pool.*/
+	class FleetRef {
+	public:
+		FleetRef();
+		FleetRef(Fleet *const inst);
+
+		/*
+		True if the Reference points to a true instance of a Fleet.*/
+		bool check() const;
+		/*
+		Unbinds the pointer to the Fleet.*/
+		void unbind();
+
+		FleetRef & operator=(Fleet *const right);
+		bool operator==(Fleet *const right) const;
+		bool operator!=(Fleet *const right) const;
+		Fleet & operator*();
+		const Fleet & operator*() const;
+		Fleet * operator->();
+		const Fleet * operator->() const;
+
+		operator Fleet * ();
+		operator const Fleet * () const;
+
+	private:
+		/*
+		A pointer to a Fleet instance.*/
+		Fleet *instance;
+
+	};
+
+}
+
+namespace std {
+
+	template<>
+	class hash<Space_Colony::FleetRef> {
+	public:
+
+		size_t operator()(const Space_Colony::FleetRef &flt) const {
+			return ( size_t ) (const Space_Colony::Fleet *) flt;
+		}
 
 	};
 

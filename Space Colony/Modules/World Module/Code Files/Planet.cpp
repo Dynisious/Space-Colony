@@ -27,6 +27,15 @@ Space_Colony::World_Module::Galacitc::Planet::Planet(const faction_type fctn, co
 													 const ConstructList & stlts)
 	: faction(fctn), name(nm), resources(rsrcs), naturalCapacity(ntrlCpcty), sites(bldngs), satellites(stlts) {}
 
+void Space_Colony::World_Module::Galacitc::Planet::clean() {
+	std::unordered_set<Planetary::Construct> removals(satellites.size());
+	for (auto iter(satellites.begin()), end(satellites.end()); iter != end; ++iter)
+		if (iter->check())
+			removals.insert(*iter);
+	for (auto iter(removals.begin()), end(removals.end()); iter != end; ++iter)
+		satellites.remove(*iter);
+}
+
 bool Space_Colony::World_Module::Galacitc::Planet::isSuperConstruct() const {
 	//Take the first site to compare the others against.
 	const Planetary::Construct &cmpr(sites.front());
@@ -130,7 +139,7 @@ Planetary::ConstructType::ConstructTags Space_Colony::World_Module::Galacitc::Pl
 	Planetary::ConstructType::ConstructTags res;
 	for (auto iter(sites.begin()), end(sites.end()); iter != end; ++iter)
 		//Iterate all sites.
-		if (iter->typeID != 0 && iter->active)
+		if (iter->check() && iter->active)
 			//The site is filled and active, add the tags to the result set.
 			res.insert((*iter)->tags.begin(), (*iter)->tags.end());
 	for (auto iter(satellites.begin()), end(satellites.end()); iter != end; ++iter)
@@ -146,7 +155,7 @@ TypeCounter Space_Colony::World_Module::Galacitc::Planet::getResourceCapacity() 
 	TypeCounter res(naturalCapacity);
 	for (auto iter(sites.begin()), end(sites.end()); iter != end; ++iter)
 		//Iterate all sites.
-		if (iter->typeID != 0)
+		if (iter->check())
 			//The site is filled, add it's capacity to the result.
 			res += (*iter)->getResourceCapacity();
 	for (auto iter(satellites.begin()), end(satellites.end()); iter != end; ++iter)
@@ -160,7 +169,7 @@ size_t Space_Colony::World_Module::Galacitc::Planet::getResourceCapacity(const _
 	size_t res(naturalCapacity.getCounter(rsrc));
 	for (auto iter(sites.begin()), end(sites.end()); iter != end; ++iter)
 		//Iterate all sites.
-		if (iter->typeID != 0)
+		if (iter->check())
 			//The site is filled, add it's capacity to the result for the type.
 			res += (*iter)->getResourceCapacity().getCounter(rsrc);
 	for (auto iter(satellites.begin()), end(satellites.end()); iter != end; ++iter)
@@ -206,7 +215,11 @@ const Planet::ConstructVector & Space_Colony::World_Module::Galacitc::Planet::ge
 
 bool Space_Colony::World_Module::Galacitc::Planet::isFilled(const size_t index) const {
 	//The site is filled.
-	return sites[index].typeID != 0;
+	return sites.at(index).check();
+}
+
+void Space_Colony::World_Module::Galacitc::Planet::emptySite(const size_t index) {
+	sites.at(index).unbind();
 }
 
 Planetary::Construct & Space_Colony::World_Module::Galacitc::Planet::getSite(const size_t index) {

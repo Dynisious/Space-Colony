@@ -6,7 +6,8 @@ using namespace Space_Colony::World_Module::Galacitc::Planetary;
 Space_Colony::World_Module::Galacitc::Planetary::ConstructType::ConstructType() {}
 
 Space_Colony::World_Module::Galacitc::Planetary::ConstructType::ConstructType(const ConstructType & orig)
-	: resourceShift(orig.resourceShift), deconstructReturn(orig.deconstructReturn), tags(orig.tags), name(orig.name), resourceCapacity(orig.resourceCapacity), constructCost(orig.constructCost) {}
+	: resourceShift(orig.resourceShift), deconstructReturn(orig.deconstructReturn), tags(orig.tags),
+	name(orig.name), resourceCapacity(orig.resourceCapacity), constructCost(orig.constructCost) {}
 
 Space_Colony::World_Module::Galacitc::Planetary::ConstructType::ConstructType(
 	const TypeCounter & rsrcShft, const TypeCounter & dcnstrctRtrn, ConstructTags tgs,
@@ -16,32 +17,38 @@ Space_Colony::World_Module::Galacitc::Planetary::ConstructType::ConstructType(
 	setConstructCost(cnstrctCst);
 }
 
-std::unordered_set<ConstructType_ID> ConstructType_All_IDs;
+std::unordered_set<ConstructType *> Pooled_All_ConstructTypes;
 
-bool Space_Colony::World_Module::Galacitc::Planetary::ConstructType::isLoaded(ConstructType_ID id) {
-	return ConstructType_All_IDs.count(id) != 0;
+ConstructType * const Space_Colony::World_Module::Galacitc::Planetary::ConstructType::create() {
+	ConstructType *res(new ConstructType());
+	Pooled_All_ConstructTypes.insert(res);
+	return res;
 }
 
-ConstructType & Space_Colony::World_Module::Galacitc::Planetary::ConstructType::getType(ConstructType_ID id) {
-	if (!isLoaded(id))
-		throw std::runtime_error("The passed ID is not a loaded ID.");
-	return *( ConstructType_Pointer ) id;
+ConstructType * const Space_Colony::World_Module::Galacitc::Planetary::ConstructType::create(const ConstructType & orig) {
+	ConstructType *res(new ConstructType(orig));
+	Pooled_All_ConstructTypes.insert(res);
+	return res;
 }
 
-ConstructType_ID Space_Colony::World_Module::Galacitc::Planetary::ConstructType::loadType(const ConstructType & type) {
-	for (auto iter(ConstructType_All_IDs.begin()), end(ConstructType_All_IDs.end()); iter != end; ++iter)
-		if (type == *( ConstructType_Pointer ) *iter)
-			//This type is already loaded.
-			return ( ConstructType_ID ) *iter;
-	return *ConstructType_All_IDs.insert((ConstructType_ID) new ConstructType(type)).first;
+ConstructType * const Space_Colony::World_Module::Galacitc::Planetary::ConstructType::create(
+	const TypeCounter & rsrcShft, const TypeCounter & dcnstrctRtrn, ConstructTags tgs, const std::string & nm,
+	const TypeCounter & rsrcCpcty, const TypeCounter & cnstrctCst) {
+	ConstructType *res(new ConstructType(rsrcShft, dcnstrctRtrn, tgs, nm, rsrcCpcty, cnstrctCst));
+	Pooled_All_ConstructTypes.insert(res);
+	return res;
 }
 
-bool Space_Colony::World_Module::Galacitc::Planetary::ConstructType::unloadType(ConstructType_ID id) {
+bool Space_Colony::World_Module::Galacitc::Planetary::ConstructType::isLoaded(const ConstructType *id) {
+	return Pooled_All_ConstructTypes.count(( ConstructType * ) id) != 0;
+}
+
+bool Space_Colony::World_Module::Galacitc::Planetary::ConstructType::unloadType(const ConstructType *id) {
 	if (isLoaded(id)) {
 		//The type is loaded, unload it.
-		ConstructType_All_IDs.erase(id);
+		Pooled_All_ConstructTypes.erase(( ConstructType * ) id);
 		//Delete the ConstructType.
-		delete ( ConstructType_Pointer ) id;
+		delete id;
 		return true;
 	} else {
 		return false;
@@ -105,28 +112,38 @@ bool Space_Colony::World_Module::Galacitc::Planetary::ConstructType::operator!=(
 }
 
 Space_Colony::World_Module::Galacitc::Planetary::Construct::Construct()
-	: Construct(0, false) {}
+	: instance(0), active(false) {}
 
 Space_Colony::World_Module::Galacitc::Planetary::Construct::Construct(const Construct & orig)
-	: Construct(orig.typeID, orig.active) {}
+	: Construct(orig.instance, orig.active) {}
 
-Space_Colony::World_Module::Galacitc::Planetary::Construct::Construct(ConstructType_ID TpID, bool actv)
-	: typeID(TpID), active(actv) {}
+Space_Colony::World_Module::Galacitc::Planetary::Construct::Construct(ConstructType *const orig, bool actv)
+	: instance(orig), active(actv) {
+	if (!check())
+		throw std::exception("The pointer is invalid.");
+}
 
 bool Space_Colony::World_Module::Galacitc::Planetary::Construct::check() const {
-	return ConstructType::isLoaded(typeID);
+	return ConstructType::isLoaded(instance);
+}
+
+void Space_Colony::World_Module::Galacitc::Planetary::Construct::unbind() {
+	instance = nullptr;
 }
 
 Construct & Space_Colony::World_Module::Galacitc::Planetary::Construct::operator=(const Construct & right) {
-	typeID = right.typeID;
+	if (!right.check())
+		throw std::exception("The pointer is invalid.");
+	instance = right.instance;
 	active = right.active;
 	return *this;
 }
 
 bool Space_Colony::World_Module::Galacitc::Planetary::Construct::operator==(const Construct & right) const {
-	return (this == &right)
-		|| (typeID == right.typeID
-			&& active == right.active);
+	if (!check() || right.check())
+		throw std::exception("The pointer is invalid.");
+	return instance == right.instance
+		&& active == right.active;
 }
 
 bool Space_Colony::World_Module::Galacitc::Planetary::Construct::operator!=(const Construct & right) const {
@@ -135,24 +152,36 @@ bool Space_Colony::World_Module::Galacitc::Planetary::Construct::operator!=(cons
 
 ConstructType & Space_Colony::World_Module::Galacitc::Planetary::Construct::operator*() {
 	if (!check())
-		throw std::exception("The TypeID of this Construct is invalid.");
-	return ConstructType::getType(typeID);
+		throw std::exception("The pointer is invalid.");
+	return *instance;
 }
 
 const ConstructType & Space_Colony::World_Module::Galacitc::Planetary::Construct::operator*() const {
 	if (!check())
-		throw std::exception("The TypeID of this Construct is invalid.");
-	return ConstructType::getType(typeID);
+		throw std::exception("The pointer is invalid.");
+	return *instance;
 }
 
 ConstructType * const Space_Colony::World_Module::Galacitc::Planetary::Construct::operator->() {
 	if (!check())
-		throw std::exception("The TypeID of this Construct is invalid.");
-	return ( ConstructType_Pointer ) typeID;
+		throw std::exception("The pointer is invalid.");
+	return instance;
 }
 
 const ConstructType * const Space_Colony::World_Module::Galacitc::Planetary::Construct::operator->() const {
 	if (!check())
-		throw std::exception("The TypeID of this Construct is invalid.");
-	return ( ConstructType_Pointer ) typeID;
+		throw std::exception("The pointer is invalid.");
+	return instance;
+}
+
+Space_Colony::World_Module::Galacitc::Planetary::Construct::operator ConstructType const*() {
+	if (!check())
+		throw std::exception("The pointer is invalid.");
+	return instance;
+}
+
+Space_Colony::World_Module::Galacitc::Planetary::Construct::operator const ConstructType const*() const {
+	if (!check())
+		throw std::exception("The pointer is invalid.");
+	return instance;
 }

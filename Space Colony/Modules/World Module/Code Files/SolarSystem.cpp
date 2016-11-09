@@ -17,7 +17,7 @@ Space_Colony::World_Module::Galacitc::SolarSystem::SolarSystem(const std::string
 	: name(nm), stars(strs), planets(plnts) {}
 
 Space_Colony::World_Module::Galacitc::SolarSystem::SolarSystem(const std::string & nm, const size_t strs,
-															   const PlanetVector & plnts, const FleetList & flts)
+															   const PlanetVector & plnts, const FleetSet & flts)
 	: name(nm), stars(strs), planets(plnts), fleets(flts) {}
 
 const SolarSystem::PlanetVector & Space_Colony::World_Module::Galacitc::SolarSystem::getPlanets() const {
@@ -32,8 +32,19 @@ const Planet & Space_Colony::World_Module::Galacitc::SolarSystem::getPlanet(cons
 	return planets[index];
 }
 
-const SolarSystem::FleetList & Space_Colony::World_Module::Galacitc::SolarSystem::getFleets() const {
+const SolarSystem::FleetSet & Space_Colony::World_Module::Galacitc::SolarSystem::getFleets() const {
 	return fleets;
+}
+
+void Space_Colony::World_Module::Galacitc::SolarSystem::clean() {
+	for (auto iter(planets.begin()), end(planets.end()); iter != end; ++iter)
+		iter->clean();
+	std::unordered_set<FleetRef> removals;
+	for (auto iter(fleets.begin()), end(fleets.end()); iter != end; ++iter)
+		if (!iter->check())
+			removals.insert(*iter);
+	for (auto iter(removals.begin()), end(removals.end()); iter != end; ++iter)
+		fleets.erase(*iter);
 }
 
 TypeCounter Space_Colony::World_Module::Galacitc::SolarSystem::getResources() const {
@@ -52,9 +63,9 @@ size_t Space_Colony::World_Module::Galacitc::SolarSystem::getResource(const __in
 	return res;
 }
 
-SolarSystem::FleetList Space_Colony::World_Module::Galacitc::SolarSystem::getFleetsByTags(
+SolarSystem::FleetSet Space_Colony::World_Module::Galacitc::SolarSystem::getFleetsByTags(
 	const ShipType::RollTagSet & tags, const ShipType::RollTagSet & exclude) const {
-	FleetList res;
+	FleetSet res;
 	for (auto iter(fleets.begin()), end(fleets.end()); iter != end; ++iter) {
 		bool load(true);
 		const ShipType::RollTagSet fleetTags((*iter)->getRollTags());
@@ -75,13 +86,13 @@ SolarSystem::FleetList Space_Colony::World_Module::Galacitc::SolarSystem::getFle
 LoadFleet:
 		if (load)
 			//The Fleet meets all the conditions.
-			res.push_back(*iter);
+			res.insert(*iter);
 	}
 	return res;
 }
 
 void Space_Colony::World_Module::Galacitc::SolarSystem::addFleet(const FleetRef & flt) {
-	fleets.push_back(flt);
+	fleets.insert(flt);
 }
 
 bool Space_Colony::World_Module::Galacitc::SolarSystem::removeFleet(const FleetRef & flt) {
@@ -116,7 +127,7 @@ faction_type Space_Colony::World_Module::Galacitc::SolarSystem::getFaction() con
 		if (res == ( faction_type ) Game_Factions::no_faction)
 			//The Planets have no faction so take the first Fleet as the
 			//faction and compare the other Fleets to it.
-			return fleets.front()->faction;
+			return (*fleets.begin())->faction;
 		for (auto iter(fleets.begin()), end(fleets.end()); iter != end; ++iter)
 			//Iterate all Fleets.
 			if (res != (*iter)->faction)
@@ -127,6 +138,7 @@ faction_type Space_Colony::World_Module::Galacitc::SolarSystem::getFaction() con
 }
 
 void Space_Colony::World_Module::Galacitc::SolarSystem::iterate() {
+	clean();
 	switch (getFaction()) {
 	default:
 #pragma region Standard Iteration

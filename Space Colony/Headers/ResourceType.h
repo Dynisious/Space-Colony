@@ -4,6 +4,8 @@
 
 namespace Space_Colony {
 
+	class ResourceRef;
+
 	/*
 	A mass and volume value.*/
 	struct ResourceType {
@@ -11,6 +13,12 @@ namespace Space_Colony {
 		ResourceType();
 		ResourceType(const ResourceType &orig);
 		ResourceType(const size_t ms, const size_t vlm);
+
+		static ResourceRef create();
+		static ResourceRef create(const ResourceType &orig);
+		static ResourceRef create(const size_t ms, const size_t vlm);
+		static bool isLoaded(ResourceType *const id);
+		static bool unloadType(ResourceType *const id);
 
 		/*
 		The mass of a unit of this ResourceType.*/
@@ -25,15 +33,36 @@ namespace Space_Colony {
 
 	};
 
-	typedef const ResourceType *const ResourceType_Pointer;
-	typedef __int32 ResourceType_ID;
+	/*
+	A safe pointer it a pooled ResourceType.*/
+	class ResourceRef {
+	public:
+		ResourceRef();
+		ResourceRef(ResourceType *const orig);
 
-	bool ResourceType_isLoaded(ResourceType_ID id);
+		/*
+		True if this reference correlates to a pooled ResourceType.*/
+		bool check() const;
+		/*
+		Unbinds the pointer to the ResourceType.*/
+		void unbind();
 
-	const ResourceType & ResourceType_get(ResourceType_ID id);
+		ResourceRef & operator=(ResourceType *const right);
+		bool operator==(ResourceType *const right) const;
+		bool operator!=(ResourceType *const right) const;
+		ResourceType & operator*();
+		const ResourceType & operator*() const;
+		ResourceType * operator->();
+		const ResourceType * operator->() const;
 
-	ResourceType_ID ResourceType_load(const ResourceType &type);
+		operator ResourceType *const ();
+		operator const ResourceType * const() const;
 
-	bool ResourceType_unload(ResourceType_ID id);
+	private:
+		/*
+		A pointer to a pooled ResourceType.*/
+		ResourceType *instance;
+		
+	};
 
 }

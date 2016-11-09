@@ -27,6 +27,11 @@ const SolarSystem & Space_Colony::World_Module::Galacitc::StarSector::getSolarSy
 	return systems[index];
 }
 
+void Space_Colony::World_Module::Galacitc::StarSector::clean() {
+	for (auto iter(systems.begin()), end(systems.end()); iter != end; ++iter)
+		iter->clean();
+}
+
 faction_type Space_Colony::World_Module::Galacitc::StarSector::getFaction() const {
 	//Get the faction of the first system.
 	faction_type res(systems.front().getFaction());

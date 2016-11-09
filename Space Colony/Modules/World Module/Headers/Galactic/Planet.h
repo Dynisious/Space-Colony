@@ -33,6 +33,9 @@ namespace Space_Colony {
 					   const ConstructVector & bldngs, const ConstructList & stlts);
 
 				/*
+				Removes all invalid Constructs.*/
+				void clean();
+				/*
 				True if the Planet is populated by a Super Construct.*/
 				bool isSuperConstruct() const;
 				/*
@@ -64,6 +67,9 @@ namespace Space_Colony {
 				/*
 				True if the passed index is filled.*/
 				bool isFilled(const size_t index) const;
+				/*
+				Clears all Construct in this Site.*/
+				void emptySite(const size_t index);
 				Planetary::Construct & getSite(const size_t index);
 				const Planetary::Construct & getSite(const size_t index) const;
 				const ConstructList & getSatellites() const;

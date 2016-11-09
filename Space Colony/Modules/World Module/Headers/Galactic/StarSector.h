@@ -26,6 +26,9 @@ namespace Space_Colony {
 				SolarSystem & getSolarSystem(const size_t index);
 				const SolarSystem & getSolarSystem(const size_t index) const;
 				/*
+				Cleans all the SolarSystems of this StarSector.*/
+				void clean();
+				/*
 				Returns the faction for the StarSector.*/
 				faction_type getFaction() const;
 				/*

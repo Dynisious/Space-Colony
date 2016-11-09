@@ -6,7 +6,7 @@
 #include "Planetary\ConstructType.h"
 #include "TypeCounter.h"
 #include <vector>
-#include <list>
+#include <unordered_set>
 #include <string>
 
 namespace Space_Colony {
@@ -20,18 +20,21 @@ namespace Space_Colony {
 			class SolarSystem {
 			public:
 				typedef std::vector<Planet> PlanetVector;
-				typedef std::list<FleetRef> FleetList;
+				typedef std::unordered_set<FleetRef> FleetSet;
 
 				SolarSystem();
 				SolarSystem(const SolarSystem &orig);
 				SolarSystem(const SolarSystem &orig, const std::string &nm);
 				SolarSystem(const std::string &nm, const size_t strs, const PlanetVector &plnts);
-				SolarSystem(const std::string &nm, const size_t strs, const PlanetVector &plnts, const FleetList & flts);
+				SolarSystem(const std::string &nm, const size_t strs, const PlanetVector &plnts, const FleetSet & flts);
 
 				const PlanetVector & getPlanets() const;
 				Planet & getPlanet(const size_t index);
 				const Planet & getPlanet(const size_t index) const;
-				const FleetList & getFleets() const;
+				const FleetSet & getFleets() const;
+				/*
+				Cleans all the Planets and Fleets of this SolarSystem.*/
+				void clean();
 				/*
 				Returns the collective resources of all the Planets in the SolarSystems.*/
 				TypeCounter getResources() const;
@@ -41,7 +44,7 @@ namespace Space_Colony {
 				size_t getResource(const __int32 rsrc) const;
 				/*
 				Returns all Fleets which contain ships whose types have and exclude the passed tags.*/
-				FleetList getFleetsByTags(const ShipType::RollTagSet &tags, const ShipType::RollTagSet &exclude) const;
+				FleetSet getFleetsByTags(const ShipType::RollTagSet &tags, const ShipType::RollTagSet &exclude) const;
 				/*
 				Adds the passed Fleet to the SolarSystem.*/
 				void addFleet(const FleetRef &flt);
@@ -72,7 +75,7 @@ namespace Space_Colony {
 				PlanetVector planets;
 				/*
 				The collection of Fleets in this SolarSystem.*/
-				FleetList fleets;
+				FleetSet fleets;
 
 			};
 
