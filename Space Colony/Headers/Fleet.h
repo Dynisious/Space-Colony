@@ -9,6 +9,38 @@
 
 namespace Space_Colony {
 
+	class Fleet;
+
+	/*
+	Accessed like a pointer this class safely refers to an instance of a Fleet
+	which is stored in the shared pool.*/
+	class FleetRef {
+	public:
+		FleetRef();
+		FleetRef(Fleet *const inst);
+
+		/*
+		True if the Reference points to a true instance of a Fleet.*/
+		bool check() const;
+
+		FleetRef & operator=(Fleet *const right);
+		bool operator==(Fleet *const right) const;
+		bool operator!=(Fleet *const right) const;
+		Fleet & operator*();
+		const Fleet & operator*() const;
+		Fleet * operator->();
+		const Fleet * operator->() const;
+
+		operator Fleet *();
+		operator const Fleet *() const;
+
+	private:
+		/*
+		A pointer to a Fleet instance.*/
+		Fleet *instance;
+
+	};
+
 	/*
 	A Fleet is a collection of counters of different Ship Types.*/
 	class Fleet {
@@ -17,6 +49,14 @@ namespace Space_Colony {
 		Fleet(const Fleet &orig);
 		Fleet(const Fleet &orig, const faction_type fctn);
 		Fleet(const faction_type fctn, const TypeCounter & shps, const TypeCounter & crg, const std::string & nm);
+
+		static FleetRef createPooled();
+		static FleetRef createPooled(const Fleet &orig);
+		static FleetRef createPooled(const Fleet &orig, const faction_type fctn);
+		static FleetRef createPooled(const faction_type fctn, const TypeCounter & shps,
+									 const TypeCounter & crg, const std::string & nm);
+		static bool isPooled(Fleet *const ptr);
+		static bool deleteFleet(Fleet *const ptr);
 
 		/*
 		Returns the ship counters whose types have and exclude the passed tags.*/

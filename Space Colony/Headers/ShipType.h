@@ -9,6 +9,9 @@
 namespace Space_Colony {
 
 	enum class ShipType_RoleTag : __int32;
+	class ShipType;
+	typedef const ShipType *const ShipType_Pointer;
+	typedef __int32 ShipType_ID;
 
 	/*
 	A Ship Type denotes the stats and identifying characteristics of a ship
@@ -19,6 +22,11 @@ namespace Space_Colony {
 
 		ShipType();
 		ShipType(const ShipType &orig);
+
+		static bool isLoaded(ShipType_ID id);
+		static const ShipType & getType(ShipType_ID id);
+		static ShipType_ID loadType(const ShipType &type);
+		static bool unloadType(ShipType_ID id);
 
 		struct CombatStats {
 			CombatStats();
@@ -95,17 +103,6 @@ namespace Space_Colony {
 		bool operator!=(const ShipType &right) const;
 
 	};
-
-	typedef const ShipType *const ShipType_Pointer;
-	typedef __int32 ShipType_ID;
-
-	bool ShipType_isLoaded(ShipType_ID id);
-
-	const ShipType & ShipType_get(ShipType_ID id);
-
-	ShipType_ID ShipType_load(const ShipType &type);
-
-	bool ShipType_unload(ShipType_ID id);
 
 	enum class ShipType_RoleTag : __int32 {
 		Orbital_Bombardment = 0,

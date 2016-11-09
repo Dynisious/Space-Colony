@@ -15,6 +15,10 @@ namespace Space_Colony {
 			namespace Planetary {
 
 				enum class ConstructType_FunctionTags : __int32;
+				class ConstructType;
+				typedef ConstructType *const ConstructType_Pointer;
+				typedef __int32 ConstructType_ID;
+
 
 				/*
 				Defines a template for a type of construct which can be
@@ -28,6 +32,11 @@ namespace Space_Colony {
 					ConstructType(const TypeCounter &rsrcShft, const TypeCounter &dcnstrctRtrn,
 								  ConstructTags tgs, const std::string &nm, const TypeCounter &rsrcCpcty,
 								  const TypeCounter &cnstrctCst);
+
+					static ConstructType & getType(ConstructType_ID id);
+					static bool isLoaded(ConstructType_ID id);
+					static ConstructType_ID loadType(const ConstructType &type);
+					static bool unloadType(ConstructType_ID id);
 
 					const TypeCounter & getResourceCapacity() const;
 					TypeCounter setResourceCapacity(const TypeCounter &rsrcCpcty);
@@ -67,16 +76,34 @@ namespace Space_Colony {
 
 				};
 
-				typedef const ConstructType *const ConstructType_Pointer;
-				typedef __int32 ConstructType_ID;
+				/*
+				A Construct represents a actualised instance of a ConstructType.*/
+				class Construct {
+				public:
+					Construct();
+					Construct(const Construct &orig);
+					Construct(ConstructType_ID TpID, bool actv);
 
-				const ConstructType & ConstructType_get(ConstructType_ID id);
+					/*
+					True if the TypeID for this Construct is valid in the game.*/
+					bool check() const;
 
-				bool ConstructType_isLoaded(ConstructType_ID id);
+					/*
+					An ID for the ConstructType which represents this Construct.*/
+					__int32 typeID;
+					/*
+					True if the Construct is currently active and is producing a change in resources.*/
+					bool active;
 
-				ConstructType_ID ConstructType_load(const ConstructType &type);
+					Construct & operator=(const Construct &right);
+					bool operator==(const Construct &right) const;
+					bool operator!=(const Construct &right) const;
+					ConstructType & operator*();
+					const ConstructType & operator*() const;
+					ConstructType *const operator->();
+					const ConstructType *const operator->() const;
 
-				bool ConstructType_unload(ConstructType_ID id);
+				};
 
 				enum class ConstructType_FunctionTags : __int32 {
 					Terestrial = 0,

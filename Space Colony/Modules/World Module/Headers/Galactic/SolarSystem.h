@@ -20,7 +20,7 @@ namespace Space_Colony {
 			class SolarSystem {
 			public:
 				typedef std::vector<Planet> PlanetVector;
-				typedef std::list<Fleet> FleetList;
+				typedef std::list<FleetRef> FleetList;
 
 				SolarSystem();
 				SolarSystem(const SolarSystem &orig);
@@ -44,10 +44,10 @@ namespace Space_Colony {
 				FleetList getFleetsByTags(const ShipType::RollTagSet &tags, const ShipType::RollTagSet &exclude) const;
 				/*
 				Adds the passed Fleet to the SolarSystem.*/
-				void addFleet(const Fleet &flt);
+				void addFleet(const FleetRef &flt);
 				/*
 				Removes the passed Fleet from the SolarSystem.*/
-				bool removeFleet(const Fleet& flt);
+				bool removeFleet(const FleetRef &flt);
 				/*
 				Returns the faction of the SolarSystem.*/
 				faction_type getFaction() const;

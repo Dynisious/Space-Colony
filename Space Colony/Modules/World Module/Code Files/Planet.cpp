@@ -30,7 +30,7 @@ Space_Colony::World_Module::Galacitc::Planet::Planet(const faction_type fctn, co
 bool Space_Colony::World_Module::Galacitc::Planet::isSuperConstruct() const {
 	//Take the first site to compare the others against.
 	const Planetary::Construct &cmpr(sites.front());
-	if (Planetary::ConstructType_isLoaded(cmpr.typeID) && !cmpr.active) {
+	if (cmpr.check() && !cmpr.active) {
 		//The first site is filled and active.
 		for (auto iter(++sites.begin()), end(sites.end()); iter != end; ++iter)
 			//Iterate all other sites.
@@ -45,7 +45,7 @@ bool Space_Colony::World_Module::Galacitc::Planet::isSuperConstruct() const {
 }
 
 std::pair<Planetary::Construct *const, bool> Space_Colony::World_Module::Galacitc::Planet::findConstruct(const Planetary::Construct & cnstrct) {
-	if (Planetary::ConstructType_isLoaded(cnstrct.typeID)) {
+	if (cnstrct.check()) {
 		//The passed Construct is loaded.
 		for (auto iter(sites.begin()), end(sites.end()); iter != end; ++iter)
 			//Iterate all the sites.
@@ -63,7 +63,7 @@ std::pair<Planetary::Construct *const, bool> Space_Colony::World_Module::Galacit
 }
 
 std::pair<const Planetary::Construct *const, bool> Space_Colony::World_Module::Galacitc::Planet::findConstruct(const Planetary::Construct & cnstrct) const {
-	if (Planetary::ConstructType_isLoaded(cnstrct.typeID)) {
+	if (cnstrct.check()) {
 		//The passed Construct is loaded.
 		for (auto iter(sites.begin()), end(sites.end()); iter != end; ++iter)
 			//Iterate all the sites.
@@ -87,14 +87,14 @@ Planet::ConstructList Space_Colony::World_Module::Galacitc::Planet::getConstruct
 		bool load(true);
 		for (auto tag_iter(tags.begin()), tag_end(tags.end()); tag_iter != tag_end; ++tag_iter)
 			//Check all include tags.
-			if (iter->getType().tags.count(*tag_iter) == 0) {
+			if ((*iter)->tags.count(*tag_iter) == 0) {
 				//This tag is not included.
 				load = false;
 				goto LoadSite;
 			}
 		for (auto exclude_iter(tags.begin()), exclude_end(tags.end()); exclude_iter != exclude_end; ++exclude_iter)
 			//Check all include tags.
-			if (iter->getType().tags.count(*exclude_iter) != 0) {
+			if ((*iter)->tags.count(*exclude_iter) != 0) {
 				//This tag is not included.
 				load = false;
 				goto LoadSite;
@@ -107,14 +107,14 @@ LoadSite:
 		bool load(true);
 		for (auto tag_iter(tags.begin()), tag_end(tags.end()); tag_iter != tag_end; ++tag_iter)
 			//Check all include tags.
-			if (iter->getType().tags.count(*tag_iter) == 0) {
+			if ((*iter)->tags.count(*tag_iter) == 0) {
 				//This tag is not included.
 				load = false;
 				goto LoadSatallite;
 			}
 		for (auto exclude_iter(tags.begin()), exclude_end(tags.end()); exclude_iter != exclude_end; ++exclude_iter)
 			//Check all include tags.
-			if (iter->getType().tags.count(*exclude_iter) != 0) {
+			if ((*iter)->tags.count(*exclude_iter) != 0) {
 				//This tag is not included.
 				load = false;
 				goto LoadSatallite;
@@ -132,12 +132,12 @@ Planetary::ConstructType::ConstructTags Space_Colony::World_Module::Galacitc::Pl
 		//Iterate all sites.
 		if (iter->typeID != 0 && iter->active)
 			//The site is filled and active, add the tags to the result set.
-			res.insert(iter->getType().tags.begin(), iter->getType().tags.end());
+			res.insert((*iter)->tags.begin(), (*iter)->tags.end());
 	for (auto iter(satellites.begin()), end(satellites.end()); iter != end; ++iter)
 		//Iterate all satallites.
 		if (iter->active)
 			//The satallite is active, add the tags to the result set.
-			res.insert(iter->getType().tags.begin(), iter->getType().tags.end());
+			res.insert((*iter)->tags.begin(), (*iter)->tags.end());
 	return res;
 }
 
@@ -148,10 +148,10 @@ TypeCounter Space_Colony::World_Module::Galacitc::Planet::getResourceCapacity() 
 		//Iterate all sites.
 		if (iter->typeID != 0)
 			//The site is filled, add it's capacity to the result.
-			res += iter->getType().getResourceCapacity();
+			res += (*iter)->getResourceCapacity();
 	for (auto iter(satellites.begin()), end(satellites.end()); iter != end; ++iter)
 		//Iterate and accumulate the capacity of all the satallites to the result.
-		res += iter->getType().getResourceCapacity();
+		res += (*iter)->getResourceCapacity();
 	return res;
 }
 
@@ -162,11 +162,11 @@ size_t Space_Colony::World_Module::Galacitc::Planet::getResourceCapacity(const _
 		//Iterate all sites.
 		if (iter->typeID != 0)
 			//The site is filled, add it's capacity to the result for the type.
-			res += iter->getType().getResourceCapacity().getCounter(rsrc);
+			res += (*iter)->getResourceCapacity().getCounter(rsrc);
 	for (auto iter(satellites.begin()), end(satellites.end()); iter != end; ++iter)
 		//Iterate and accumulate the capacity of all the satallites to the
 		//result for the type.
-		res += iter->getType().getResourceCapacity().getCounter(rsrc);
+		res += (*iter)->getResourceCapacity().getCounter(rsrc);
 	return res;
 }
 

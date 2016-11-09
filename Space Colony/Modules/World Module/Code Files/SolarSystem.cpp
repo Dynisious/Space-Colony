@@ -57,7 +57,7 @@ SolarSystem::FleetList Space_Colony::World_Module::Galacitc::SolarSystem::getFle
 	FleetList res;
 	for (auto iter(fleets.begin()), end(fleets.end()); iter != end; ++iter) {
 		bool load(true);
-		const ShipType::RollTagSet fleetTags(iter->getRollTags());
+		const ShipType::RollTagSet fleetTags((*iter)->getRollTags());
 		for (auto tag_iter(tags.begin()), tag_end(tags.end()); tag_iter != tag_end; ++tag_iter)
 			//Check all include tags.
 			if (fleetTags.count(*tag_iter) == 0) {
@@ -80,11 +80,11 @@ LoadFleet:
 	return res;
 }
 
-void Space_Colony::World_Module::Galacitc::SolarSystem::addFleet(const Fleet & flt) {
+void Space_Colony::World_Module::Galacitc::SolarSystem::addFleet(const FleetRef & flt) {
 	fleets.push_back(flt);
 }
 
-bool Space_Colony::World_Module::Galacitc::SolarSystem::removeFleet(const Fleet & flt) {
+bool Space_Colony::World_Module::Galacitc::SolarSystem::removeFleet(const FleetRef & flt) {
 	auto pos(fleets.begin());
 	for (auto end(fleets.end()); pos != end; ++pos)
 		//Iterate all the Fleets.
@@ -116,10 +116,10 @@ faction_type Space_Colony::World_Module::Galacitc::SolarSystem::getFaction() con
 		if (res == ( faction_type ) Game_Factions::no_faction)
 			//The Planets have no faction so take the first Fleet as the
 			//faction and compare the other Fleets to it.
-			return fleets.front().faction;
+			return fleets.front()->faction;
 		for (auto iter(fleets.begin()), end(fleets.end()); iter != end; ++iter)
 			//Iterate all Fleets.
-			if (res != iter->faction)
+			if (res != (*iter)->faction)
 				//The factions differ, this SolarSystem is contested.
 				return ( faction_type ) Game_Factions::contested;
 	}
@@ -138,15 +138,15 @@ void Space_Colony::World_Module::Galacitc::SolarSystem::iterate() {
 				for (auto cnstrct_iter(planet_iter->getSites().begin()), cnstrct_end(planet_iter->getSites().end());
 					 cnstrct_iter != cnstrct_end; ++cnstrct_iter) {
 					//Iterate every site on the Planet.
-					if (Planetary::ConstructType_isLoaded(cnstrct_iter->typeID)) {
+					if (cnstrct_iter->check()) {
 						//The type is loaded.
 						if (cnstrct_iter->active &&
 							//The construct is active.
-							(cnstrct_iter->getType().tags.count(Planetary::ConstructType_FunctionTags::City) != 0
-							|| cnstrct_iter->getType().tags.count(Planetary::ConstructType_FunctionTags::Agricultural) != 0
-							|| cnstrct_iter->getType().tags.count(Planetary::ConstructType_FunctionTags::Constant_Drain) != 0)) {
+							((*cnstrct_iter)->tags.count(Planetary::ConstructType_FunctionTags::City) != 0
+							|| (*cnstrct_iter)->tags.count(Planetary::ConstructType_FunctionTags::Agricultural) != 0
+							|| (*cnstrct_iter)->tags.count(Planetary::ConstructType_FunctionTags::Constant_Drain) != 0)) {
 							//The construct has city, agricultural or constant_drain tags.
-							TypeCounter shift(cnstrct_iter->getType().resourceShift);
+							TypeCounter shift((*cnstrct_iter)->resourceShift);
 							if (planet_iter->isSuperConstruct())
 								//The Planet operates as a Super Construct; adjust the resource shifts.
 								shift = ((shift.getPos() *= 2) += (shift.getNeg() /= 2));
@@ -165,14 +165,14 @@ void Space_Colony::World_Module::Galacitc::SolarSystem::iterate() {
 				for (auto cnstrct_iter(planet_iter->getSatellites().begin()), cnstrct_end(planet_iter->getSatellites().end());
 					 cnstrct_iter != cnstrct_end; ++cnstrct_iter) {
 					//Iterate every site on the Planet.
-					if (Planetary::ConstructType_isLoaded(cnstrct_iter->typeID)) {
+					if (cnstrct_iter->check()) {
 						//The type is loaded.
 						if (cnstrct_iter->active &&
 							//The construct is active.
-							cnstrct_iter->getType().tags.count(Planetary::ConstructType_FunctionTags::Constant_Drain) != 0) {
+							(*cnstrct_iter)->tags.count(Planetary::ConstructType_FunctionTags::Constant_Drain) != 0) {
 							//The construct has constant_drain tag.
 							try {
-								planet_iter->incResources(cnstrct_iter->getType().resourceShift);
+								planet_iter->incResources((*cnstrct_iter)->resourceShift);
 								//Increment the resources.
 							} catch (...) {
 								//The increment cannot be done, deactivate the construct.

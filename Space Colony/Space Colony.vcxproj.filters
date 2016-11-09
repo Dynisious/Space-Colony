@@ -17,7 +17,6 @@
     <ClInclude Include="Modules\World Module\Headers\World Module.h" />
     <ClInclude Include="Modules\World Module\Headers\Galactic\Galactic.h" />
     <ClInclude Include="Modules\World Module\Headers\Galactic\Planet.h" />
-    <ClInclude Include="Modules\World Module\Headers\Galactic\Planetary\Construct.h" />
     <ClInclude Include="Modules\World Module\Headers\Galactic\Planetary\ConstructType.h" />
     <ClInclude Include="Modules\World Module\Headers\Galactic\Planetary\Planetary.h" />
     <ClInclude Include="Modules\World Module\Headers\Galactic\SolarSystem.h" />
@@ -31,7 +30,6 @@
     <ClCompile Include="Code Files\Fleet.cpp" />
     <ClCompile Include="Code Files\Space Colony.cpp" />
     <ClCompile Include="Modules\World Module\Code Files\ConstructType.cpp" />
-    <ClCompile Include="Modules\World Module\Code Files\Construct.cpp" />
     <ClCompile Include="Modules\World Module\Code Files\Planet.cpp" />
     <ClCompile Include="Modules\World Module\Code Files\SolarSystem.cpp" />
     <ClCompile Include="Modules\World Module\Code Files\StarSector.cpp" />

@@ -7,6 +7,38 @@ Space_Colony::ShipType::ShipType() {}
 Space_Colony::ShipType::ShipType(const ShipType & orig)
 	: combat(orig.combat), world(orig.world) {}
 
+std::unordered_set<ShipType_ID> ShipType_All_IDs;
+
+bool Space_Colony::ShipType::isLoaded(ShipType_ID id) {
+	return ShipType_All_IDs.count(id) != 0;
+}
+
+const ShipType & Space_Colony::ShipType::getType(ShipType_ID id) {
+	if (!isLoaded(id))
+		throw std::runtime_error("The passed ID is not a loaded ID.");
+	return *( ShipType_Pointer ) id;
+}
+
+ShipType_ID Space_Colony::ShipType::loadType(const ShipType & type) {
+	for (auto iter(ShipType_All_IDs.begin()), end(ShipType_All_IDs.end()); iter != end; ++iter)
+		if (type == *( ShipType_Pointer ) *iter)
+			//This type is already loaded, return it's ID.
+			return ( ShipType_ID ) *iter;
+	return *ShipType_All_IDs.insert((ShipType_ID) new ShipType(type)).first;
+}
+
+bool Space_Colony::ShipType::unloadType(ShipType_ID id) {
+	if (isLoaded(id)) {
+		//The id is loaded, unload it.
+		ShipType_All_IDs.erase(id);
+		//Delete the ShipType.
+		delete ( ShipType_Pointer ) id;
+		return true;
+	} else {
+		return false;
+	}
+}
+
 ShipType Space_Colony::ShipType::operator=(const ShipType & right) {
 	combat = right.combat;
 	world = right.world;
@@ -85,36 +117,4 @@ bool Space_Colony::ShipType::WorldStats::operator==(const WorldStats & right) co
 
 bool Space_Colony::ShipType::WorldStats::operator!=(const WorldStats & right) const {
 	return !operator==(right);
-}
-
-std::unordered_set<ShipType_ID> ShipType_All_IDs;
-
-bool Space_Colony::ShipType_isLoaded(ShipType_ID id) {
-	return ShipType_All_IDs.count(id) != 0;
-}
-
-const ShipType & Space_Colony::ShipType_get(ShipType_ID id) {
-	if (!ShipType_isLoaded(id))
-		throw std::runtime_error("The passed ID is not a loaded ID.");
-	return *( ShipType_Pointer ) id;
-}
-
-ShipType_ID Space_Colony::ShipType_load(const ShipType & type) {
-	for (auto iter(ShipType_All_IDs.begin()), end(ShipType_All_IDs.end()); iter != end; ++iter)
-		if (type == *( ShipType_Pointer ) *iter)
-			//This type is already loaded, return it's ID.
-			return ( ShipType_ID ) *iter;
-	return *ShipType_All_IDs.insert((ShipType_ID) new ShipType(type)).first;
-}
-
-bool Space_Colony::ShipType_unload(ShipType_ID id) {
-	if (ShipType_isLoaded(id)) {
-		//The id is loaded, unload it.
-		ShipType_All_IDs.erase(id);
-		//Delete the ShipType.
-		delete ( ShipType_Pointer ) id;
-		return true;
-	} else {
-		return false;
-	}
 }

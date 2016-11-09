@@ -2,7 +2,7 @@
 
 #include "Galactic.h"
 #include "TypeCounter.h"
-#include "Planetary\Construct.h"
+#include "Planetary\ConstructType.h"
 #include <vector>
 #include <list>
 #include <stdexcept>
