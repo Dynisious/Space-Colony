@@ -1,91 +1,80 @@
 #pragma once
 
 #include "Space Colony.h"
-#include "ShipType.h"
 #include "TypeCounter.h"
+#include "ShipType.h"
 #include "ResourceType.h"
 #include <string>
 #include <stdexcept>
-#include <xhash>
+#include <vector>
 
 namespace Space_Colony {
 
-	class FleetRef;
-
 	/*
-	A Fleet is a collection of counters of different Ship Types.*/
+	A Fleet is a collection of counters of different and cargo ShipTypes.*/
 	class Fleet {
 	public:
+		typedef TypeCounter ShipTypeCounter;
+		typedef TypeCounter ResourceTypeCounter;
+
+		static const size_t Cargo_Capacity_Exceeded = 1,
+			Fuel_Capacity_Exceeded = 2,
+			Invalid_Counter_Exception = 3;
+
 		Fleet();
 		Fleet(const Fleet &orig);
-		Fleet(const Fleet &orig, const faction_type fctn);
-		Fleet(const faction_type fctn, const TypeCounter & shps, const TypeCounter & crg, const std::string & nm);
+		Fleet(const faction_type fctn, const std::string &nm, const size_t fl,
+			  const ShipTypeCounter &shps, const ResourceTypeCounter &crg);
 
-		static FleetRef create();
-		static FleetRef create(const Fleet &orig);
-		static FleetRef create(const Fleet &orig, const faction_type fctn);
-		static FleetRef create(const faction_type fctn, const TypeCounter & shps,
-							   const TypeCounter & crg, const std::string & nm);
-		static bool isPooled(Fleet *const ptr);
-		static bool deleteFleet(Fleet *const ptr);
-
+		const ShipTypeCounter & getShips() const;
+		ShipTypeCounter setShips(
+			const ShipTypeCounter &shps, const ShipTypeVector &typs,
+			const ResourceTypeVector &rsrc);
+		const ResourceTypeCounter & getCargo() const;
+		ResourceTypeCounter setCargo(
+			const ResourceTypeCounter &crg, const ShipTypeVector &shps,
+			const ResourceTypeVector &rsrc);
 		/*
-		Returns the ship counters whose types have and exclude the passed tags.*/
-		TypeCounter getShipsByTags(const ShipType::RollTagSet &tags, const ShipType::RollTagSet &exclude) const;
+		Sets the counter for the passed type of ship and returns the old counter.*/
+		size_t setShips(const size_t ship_type, const size_t val,
+						const ShipTypeVector &shps, const ResourceTypeVector &rsrc);
 		/*
-		Returns all the ship counters for this Fleet.*/
-		const TypeCounter & getShips() const;
-		/*
-		Returns the old counters and sets the internal counters.*/
-		TypeCounter setShips(const TypeCounter & shps);
-		/*
-		Returns the old counter and sets the internal counter.*/
-		size_t setShip(const __int32 type, const size_t val, size_t *const returned_fuel = nullptr);
+		Sets the counter for the passed type of cargo and returns the old counter.*/
+		size_t setCargo(const size_t resource_type, const size_t val,
+						const ShipTypeVector &shps, const ResourceTypeVector &rsrc);
 		/*
 		Returns the range which this Fleet can travel before running out of fuel.*/
-		double getRange() const;
+		double getRange(const ShipTypeVector &shps, const ResourceTypeVector &rsrc) const;
 		/*
-		Returns the cumulative role tags of all the Ship Types of this Fleet.*/
-		ShipType::RollTagSet getRollTags() const;
-		/*
-		Returns the cumulative fuel effeciency of all the Ships.*/
-		double getFuelEffeciency() const;
+		Returns the average fuel efficiency of all the ships in this Fleet.*/
+		double getFuelEfficiency(const ShipTypeVector &shps) const;
 		/*
 		Returns the cumulative fuel capacity of this Fleet.*/
-		size_t getFuelCapacity() const;
+		size_t getFuelCapacity(const ShipTypeVector &shps) const;
 		/*
 		Returns the fuel in this Fleet.*/
 		size_t getFuel() const;
 		/*
 		Returns the old fuel value and sets the internal value.*/
-		size_t setFuel(size_t fl);
+		size_t setFuel(const size_t fl, const ShipTypeVector &shps);
 		/*
 		Returns the old fuel value and increments the internal value.*/
-		size_t incFuel(__int32 fl);
+		size_t incFuel(const __int32 inc, const ShipTypeVector &shps);
 		/*
-		Returns the cumulative cargo capacity of this Fleet.*/
-		size_t getCargoCapacity() const;
+		Returns the cumulative cargo capacity(volume units) of this Fleet.*/
+		size_t getCargoCapacity(const ShipTypeVector &shps) const;
 		/*
 		Returns the volume of all the cargo in this Fleet.*/
-		size_t getCargoVolume() const;
+		size_t getCargoVolume(const ResourceTypeVector &rsrc) const;
 		/*
 		Returns the mass of all the cargo in this Fleet.*/
-		size_t getCargoMass() const;
+		size_t getCargoMass(const ResourceTypeVector &rsrc) const;
+		/*
+		Returns the cumulative mass of all the Ships in this Fleet.*/
+		size_t getShipMass(const ShipTypeVector &shps) const;
 		/*
 		Returns the mass of all the cargo and Ships in this Fleet.*/
-		size_t getFleetMass() const;
-		/*
-		Returns all the cargo in this Fleet.*/
-		const TypeCounter & getCargo() const;
-		/*
-		Returns the old cargo and sets the internal cargo.*/
-		TypeCounter setCargo(const TypeCounter & crg);
-		/*
-		Returns the old value and sets the internal value.*/
-		size_t setCargo(const __int32 crg, const __int32 vl);
-		/*
-		Returns the old cargo value and increments the internal cargo.*/
-		size_t incCargo(const __int32 crg, const __int32 vl);
+		size_t getFleetMass(const ShipTypeVector &shps, const ResourceTypeVector &rsrc) const;
 
 		/*
 		The alignment of this Fleet within the game.*/
@@ -104,59 +93,14 @@ namespace Space_Colony {
 		size_t fuel;
 		/*
 		A count of the number of Ships of a particular type within this Fleet.*/
-		TypeCounter ships;
+		ShipTypeCounter ships;
 		/*
 		A count of the quantity of different types of cargo contained within
 		this Fleet.*/
-		TypeCounter cargo;
+		ResourceTypeCounter cargo;
 
 	};
 
-	/*
-	Accessed like a pointer this class safely refers to an instance of a Fleet
-	which is stored in the shared pool.*/
-	class FleetRef {
-	public:
-		FleetRef();
-		FleetRef(Fleet *const inst);
-
-		/*
-		True if the Reference points to a true instance of a Fleet.*/
-		bool check() const;
-		/*
-		Unbinds the pointer to the Fleet.*/
-		void unbind();
-
-		FleetRef & operator=(Fleet *const right);
-		bool operator==(Fleet *const right) const;
-		bool operator!=(Fleet *const right) const;
-		Fleet & operator*();
-		const Fleet & operator*() const;
-		Fleet * operator->();
-		const Fleet * operator->() const;
-
-		operator Fleet * ();
-		operator const Fleet * () const;
-
-	private:
-		/*
-		A pointer to a Fleet instance.*/
-		Fleet *instance;
-
-	};
-
-}
-
-namespace std {
-
-	template<>
-	class hash<Space_Colony::FleetRef> {
-	public:
-
-		size_t operator()(const Space_Colony::FleetRef &flt) const {
-			return ( size_t ) (const Space_Colony::Fleet *) flt;
-		}
-
-	};
+	typedef std::vector<Fleet> FleetVector;
 
 }

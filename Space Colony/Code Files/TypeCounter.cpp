@@ -3,23 +3,28 @@
 using namespace Space_Colony;
 
 Space_Colony::TypeCounter::TypeCounter()
-	: counters() {}
+	: counters(0) {}
+
+Space_Colony::TypeCounter::TypeCounter(const size_t cnt)
+	: counters(cnt) {}
 
 Space_Colony::TypeCounter::TypeCounter(const TypeCounter & orig)
-	: counters(orig.counters) {}
+	: counters(orig) {}
 
 Space_Colony::TypeCounter::TypeCounter(const CounterMap & orig)
 	: counters(orig.size()) {
-	for (const_iterator iter(orig.begin()), end(orig.end()); iter != end; ++iter)
+	//Iterate all the counters in the passed map.
+	for (auto iter(orig.begin()), end(orig.end()); iter != end; ++iter)
+		//Only non 0 counters should be added.
 		if (iter->second != 0)
 			counters.emplace(*iter);
 }
 
-Space_Colony::TypeCounter::const_iterator Space_Colony::TypeCounter::begin() const {
+TypeCounter::const_iterator Space_Colony::TypeCounter::begin() const {
 	return counters.begin();
 }
 
-Space_Colony::TypeCounter::const_iterator Space_Colony::TypeCounter::end() const {
+TypeCounter::const_iterator Space_Colony::TypeCounter::end() const {
 	return counters.end();
 }
 
@@ -33,180 +38,247 @@ bool Space_Colony::TypeCounter::empty() const {
 
 __int32 Space_Colony::TypeCounter::sum() const {
 	__int32 res(0);
-	for (const_iterator iter(begin()), end(end()); iter != end; ++iter)
-		//Accumulate all counters.
+	//Iterate all counters.
+	for (auto iter(begin()), end(end()); iter != end; ++iter)
+		//Accumulate the counter to the sum of all counters.
 		res += iter->second;
 	return res;
 }
 
-__int32 Space_Colony::TypeCounter::getCounter(const type_id id) const {
-	if (counters.count(id) == 0)
-		//The counter does not exists.
-		return 0;
-	else
-		//The counter exists.
-		return counters.at(id);
+bool Space_Colony::TypeCounter::contains(const __int32 key) const {
+	return counters.count(key) != 0;
 }
 
-__int32 Space_Colony::TypeCounter::setCounter(const type_id id, const __int32 val) {
-	__int32 res(getCounter(id));
-	if (val == 0)
-		//The counter is zeroed, remove it.
-		counters.erase(id);
+__int32 Space_Colony::TypeCounter::getCounter(const __int32 key) const {
+	if (contains(key))
+		//Return the counter is the key is found.
+		return counters.at(key);
 	else
-		//Assign the counter.
-		counters.insert_or_assign(id, val);
+		//Return 0 if the key is not found.
+		return 0;
+}
+
+__int32 Space_Colony::TypeCounter::setCounter(const __int32 key, const __int32 val) {
+	//Store the current counter.
+	__int32 res(getCounter(key));
+	if (val == 0)
+		//If the counter is being set to 0, remove it.
+		counters.erase(key);
+	else
+		//If the value is non 0 assign it.
+		counters.insert_or_assign(key, val);
+	//Return the old counter.
 	return res;
 }
 
-__int32 Space_Colony::TypeCounter::incCounter(const type_id id, const __int32 val) {
-	return setCounter(id, getCounter(id) + val);
+__int32 Space_Colony::TypeCounter::incCounter(const __int32 key, const __int32 inc) {
+	//Set the counter to it's current value plus the increment.
+	return setCounter(key, getCounter(key) + inc);
 }
 
 TypeCounter Space_Colony::TypeCounter::getNeg() const {
-	CounterMap res(size());
-	for (const_iterator iter(begin()), end(end()); iter != end; ++iter)
-		//Iterate all counters.
+	//Create a result counter with enough spaces for all the counters.
+	TypeCounter res(size());
+	//Iterate all counters.
+	for (auto iter(begin()), end(end()); iter != end; ++iter)
 		if (iter->second < 0)
-			//The counter is negative and should be returned.
-			res.emplace(*iter);
+			//If the counter is negative add it to the result.
+			res.counters.emplace(*iter);
+	//Return the result counter.
 	return res;
 }
 
 TypeCounter Space_Colony::TypeCounter::getPos() const {
-	CounterMap res(size());
-	for (const_iterator iter(begin()), end(end()); iter != end; ++iter)
-		//Iterate all counters.
+	//Create a result counter with enough spaces for all the counters.
+	TypeCounter res(size());
+	//Iterate all counters.
+	for (auto iter(begin()), end(end()); iter != end; ++iter)
 		if (iter->second > 0)
-			//The counter is positive and should be removed.
-			res.emplace(*iter);
+			//If the counter is positive add it to the result.
+			res.counters.emplace(*iter);
+	//Return the result counter.
 	return res;
 }
 
 bool Space_Colony::TypeCounter::isPos() const {
-	CounterMap res(size());
-	for (const_iterator iter(begin()), end(end()); iter != end; ++iter)
-		//Iterate all counters.
+	//Iterate all counters.
+	for (auto iter(begin()), end(end()); iter != end; ++iter)
 		if (iter->second < 0)
-			//The counter is negative, return false.
+			//Return false if the counter is negative.
 			return false;
 	return true;
 }
 
 bool Space_Colony::TypeCounter::isNeg() const {
-	CounterMap res(size());
-	for (const_iterator iter(begin()), end(end()); iter != end; ++iter)
-		//Iterate all counters.
+	//Iterate all counters.
+	for (auto iter(begin()), end(end()); iter != end; ++iter)
 		if (iter->second > 0)
-			//The counter is positive, return false.
+			//Return false if the counter is positive.
 			return false;
 	return true;
 }
 
-TypeCounter Space_Colony::TypeCounter::shared(const CounterMap & right) const {
-	CounterMap res(size());
-	for (const_iterator iter(begin()), end(end()); iter != end; ++iter)
-		//Iterate all counters.
-		if (right.count(iter->first) != 0)
-			//The counter is shared and the counter should be returned.
-			res.emplace(*iter);
+TypeCounter Space_Colony::TypeCounter::shared(const TypeCounter & cnts) const {
+	//Create a result counter with enough spaces for all the counters.
+	TypeCounter res(size());
+	//Iterate all counters.
+	for (auto iter(begin()), end(end()); iter != end; ++iter)
+		if (cnts.contains(iter->first))
+			//If the key is shared in both counters, include it.
+			res.counters.emplace(*iter);
+	//Return the result counter.
 	return res;
 }
 
-TypeCounter Space_Colony::TypeCounter::difference(const CounterMap & right) const {
-	CounterMap res(size());
-	for (const_iterator iter(begin()), end(end()); iter != end; ++iter)
-		//Iterate all counters.
-		if (right.count(iter->first) == 0)
-			//The counter is unique and the counter should be returned.
-			res.emplace(*iter);
+TypeCounter Space_Colony::TypeCounter::different(const TypeCounter & cnts) const {
+	//Create a result counter with enough spaces for all the counters.
+	TypeCounter res(size());
+	//Iterate all counters.
+	for (auto iter(begin()), end(end()); iter != end; ++iter)
+		if (!cnts.contains(iter->first))
+			//If the key is unique to this counter, include it.
+			res.counters.emplace(*iter);
+	//Return the result counter.
 	return res;
 }
 
 TypeCounter & Space_Colony::TypeCounter::operator=(const TypeCounter & right) {
-	counters = right;
+	counters = right.counters;
 	return *this;
 }
 
-bool Space_Colony::TypeCounter::operator==(const TypeCounter & right) const {
-	return (this == &right)
-		|| (counters == right.counters);
+bool Space_Colony::TypeCounter::operator==(const CounterMap & right) const {
+	return counters == right;
 }
 
-bool Space_Colony::TypeCounter::operator!=(const TypeCounter & right) const {
+bool Space_Colony::TypeCounter::operator!=(const CounterMap & right) const {
 	return !operator==(right);
 }
 
-bool Space_Colony::TypeCounter::operator<(const TypeCounter & right) const {
-	for (const_iterator iter(begin()), end(end()); iter != end; ++iter)
-		//Iterate all counters.
-		if (iter->second > right.getCounter(iter->first))
-			//This counter is greater, return false.
+bool Space_Colony::TypeCounter::operator<(const CounterMap & right) const {
+	//Iterate all 'right's counters.
+	for (auto iter(right.begin()), end(right.end()); iter != end; ++iter)
+		if (getCounter(iter->first) >= iter->second)
+			//If not '<' return false.
 			return false;
-	for (const_iterator iter(right.begin()), end(right.end()); iter != end; ++iter)
-		//Iterate right's counters.
-		if (getCounter(iter->first) > iter->second)
-			//This counter is greater, return false.
-			return false;
+	//Iterate all counters.
+	for (auto iter(begin()), end(end()); iter != end; ++iter)
+		//Check whether the counter is in 'right'.
+		if (right.count(iter->first) != 0) {
+			if (iter->second >= right.at(iter->first))
+				//If not '<' return false.
+				return false;
+		} else {
+			if (iter->second >= 0)
+				//If not '<' return false.
+				return false;
+		}
 	return true;
 }
 
-bool Space_Colony::TypeCounter::operator>=(const TypeCounter & right) const {
-	return !operator<(right);
-}
-
-bool Space_Colony::TypeCounter::operator>(const TypeCounter & right) const {
-	for (const_iterator iter(begin()), end(end()); iter != end; ++iter)
-		//Iterate all counters.
-		if (iter->second < right.getCounter(iter->first))
-			//This counter is less, return false.
-			return false;
-	for (const_iterator iter(right.begin()), end(right.end()); iter != end; ++iter)
-		//Iterate right's counters.
+bool Space_Colony::TypeCounter::operator>=(const CounterMap & right) const {
+	//Iterate all 'right's counters.
+	for (auto iter(right.begin()), end(right.end()); iter != end; ++iter)
 		if (getCounter(iter->first) < iter->second)
-			//This counter is less, return false.
+			//If not '>=' return false.
 			return false;
+	//Iterate all counters.
+	for (auto iter(begin()), end(end()); iter != end; ++iter)
+		//Check whether the counter is in 'right'.
+		if (right.count(iter->first) != 0) {
+			if (iter->second < right.at(iter->first))
+				//If not '>=' return false.
+				return false;
+		} else {
+			if (iter->second < 0)
+				//If not '>=' return false.
+				return false;
+		}
 	return true;
 }
 
-bool Space_Colony::TypeCounter::operator<=(const TypeCounter & right) const {
-	return !operator>(right);
+bool Space_Colony::TypeCounter::operator>(const CounterMap & right) const {
+	//Iterate all 'right's counters.
+	for (auto iter(right.begin()), end(right.end()); iter != end; ++iter)
+		if (getCounter(iter->first) <= iter->second)
+			//If not '>' return false.
+			return false;
+	//Iterate all counters.
+	for (auto iter(begin()), end(end()); iter != end; ++iter)
+		//Check whether the counter is in 'right'.
+		if (right.count(iter->first) != 0) {
+			if (iter->second <= right.at(iter->first))
+				//If not '>' return false.
+				return false;
+		} else {
+			if (iter->second <= 0)
+				//If not '>' return false.
+				return false;
+		}
+	return true;
 }
 
-TypeCounter & Space_Colony::TypeCounter::operator+=(const TypeCounter & right) {
-	for (const_iterator iter(right.begin()), end(right.end()); iter != end; ++iter)
-		//Iterate and increment all counters by right.
+bool Space_Colony::TypeCounter::operator<=(const CounterMap & right) const {
+	//Iterate all 'right's counters.
+	for (auto iter(right.begin()), end(right.end()); iter != end; ++iter)
+		if (getCounter(iter->first) > iter->second)
+			//If not '<=' return false.
+			return false;
+	//Iterate all counters.
+	for (auto iter(begin()), end(end()); iter != end; ++iter)
+		//Check whether the counter is in 'right'.
+		if (right.count(iter->first) != 0) {
+			if (iter->second > right.at(iter->first))
+				//If not '<=' return false.
+				return false;
+		} else {
+			if (iter->second > 0)
+				//If not '<=' return false.
+				return false;
+		}
+	return true;
+}
+
+TypeCounter & Space_Colony::TypeCounter::operator+=(const CounterMap & right) {
+	//Iterate all 'right's counters.
+	for (auto iter(right.begin()), end(right.end()); iter != end; ++iter)
+		//Increment the counter by 'right'.
 		incCounter(iter->first, iter->second);
 	return *this;
 }
 
-TypeCounter Space_Colony::TypeCounter::operator+(const TypeCounter & right) const {
+TypeCounter Space_Colony::TypeCounter::operator+(const CounterMap & right) const {
 	return TypeCounter(*this) += right;
 }
 
-TypeCounter Space_Colony::TypeCounter::operator-() const {
-	CounterMap res(size());
-	for (const_iterator iter(begin()), end(end()); iter != end; ++iter)
-		//Iterate and negate all counters.
-		res.emplace(iter->first, -iter->second);
-	return res;
-}
-
-TypeCounter & Space_Colony::TypeCounter::operator-=(const TypeCounter & right) {
-	for (const_iterator iter(right.begin()), end(right.end()); iter != end; ++iter)
-		//Iterate and increment all counters by -right.
+TypeCounter & Space_Colony::TypeCounter::operator-=(const CounterMap & right) {
+	//Iterate all 'right's counters.
+	for (auto iter(right.begin()), end(right.end()); iter != end; ++iter)
+		//Decrement the counter by 'right'.
 		incCounter(iter->first, -iter->second);
 	return *this;
 }
 
-TypeCounter Space_Colony::TypeCounter::operator-(const TypeCounter & right) const {
+TypeCounter Space_Colony::TypeCounter::operator-(const CounterMap & right) const {
 	return TypeCounter(*this) -= right;
 }
 
+TypeCounter Space_Colony::TypeCounter::operator-() const {
+	//Create the result counter with enough spaces for all the counters.
+	TypeCounter res(size());
+	//Iterate all counters.
+	for (auto iter(begin()), end(end()); iter != end; ++iter)
+		//Assign the negative of the counter.
+		res.counters.insert_or_assign(iter->first, -iter->second);
+	//Return the result counter.
+	return res;
+}
+
 TypeCounter & Space_Colony::TypeCounter::operator*=(const double right) {
-	for (const_iterator iter(counters.begin()), end(counters.end()); iter != end; ++iter)
-		//Iterate and multiply all counters by right.
-		setCounter(iter->first, iter->second * right);
+	//Iterate all counters.
+	for (auto iter(counters.begin()), end(counters.end()); iter != end; ++iter)
+		//Multiply the counter by 'right'.
+		iter->second *= right;
 	return *this;
 }
 
@@ -215,9 +287,10 @@ TypeCounter Space_Colony::TypeCounter::operator*(const double right) const {
 }
 
 TypeCounter & Space_Colony::TypeCounter::operator/=(const double right) {
-	for (const_iterator iter(counters.begin()), end(counters.end()); iter != end; ++iter)
-		//Iterate and divide all counters by right.
-		setCounter(iter->first, iter->second / right);
+	//Iterate all counters.
+	for (auto iter(counters.begin()), end(counters.end()); iter != end; ++iter)
+		//Divide the counter by 'right'.
+		iter->second /= right;
 	return *this;
 }
 
@@ -225,10 +298,6 @@ TypeCounter Space_Colony::TypeCounter::operator/(const double right) const {
 	return TypeCounter(*this) /= right;
 }
 
-Space_Colony::TypeCounter::operator const CounterMap &() const {
-	return counters;
-}
-
-Space_Colony::TypeCounter::operator CounterMap () const {
+Space_Colony::TypeCounter::operator const CounterMap&() const {
 	return counters;
 }

@@ -13,27 +13,36 @@
     <ClInclude Include="Headers\TypeCounter.h" />
     <ClInclude Include="Headers\Space Colony.h" />
     <ClInclude Include="Headers\ShipType.h" />
+    <ClInclude Include="Headers\ResourceType.h" />
     <ClInclude Include="Headers\Fleet.h" />
     <ClInclude Include="Modules\World Module\Headers\World Module.h" />
     <ClInclude Include="Modules\World Module\Headers\Galactic\Galactic.h" />
-    <ClInclude Include="Modules\World Module\Headers\Galactic\Planet.h" />
-    <ClInclude Include="Modules\World Module\Headers\Galactic\Planetary\ConstructType.h" />
     <ClInclude Include="Modules\World Module\Headers\Galactic\Planetary\Planetary.h" />
+    <ClInclude Include="Modules\World Module\Headers\Galactic\Planetary\Construct.h" />
+    <ClInclude Include="Modules\World Module\Headers\Galactic\Planet.h" />
     <ClInclude Include="Modules\World Module\Headers\Galactic\SolarSystem.h" />
     <ClInclude Include="Modules\World Module\Headers\Galactic\StarSector.h" />
+    <ClInclude Include="Headers\ConstructType.h" />
     <ClInclude Include="Modules\World Module\Headers\Galaxy.h" />
-    <ClInclude Include="Headers\ResourceType.h" />
+    <ClInclude Include="Headers\CombatStats.h" />
+    <ClInclude Include="Modules\Combat Module\Headers\CombatFrame.h" />
+    <ClInclude Include="Modules\Combat Module\Headers\Combat Module.h" />
+    <ClInclude Include="Modules\Combat Module\Headers\CombatInstance.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Code Files\TypeCounter.cpp" />
     <ClCompile Include="Code Files\ShipType.cpp" />
+    <ClCompile Include="Code Files\ResourceType.cpp" />
     <ClCompile Include="Code Files\Fleet.cpp" />
-    <ClCompile Include="Code Files\Space Colony.cpp" />
-    <ClCompile Include="Modules\World Module\Code Files\ConstructType.cpp" />
+    <ClCompile Include="Modules\World Module\Code Files\Construct.cpp" />
     <ClCompile Include="Modules\World Module\Code Files\Planet.cpp" />
     <ClCompile Include="Modules\World Module\Code Files\SolarSystem.cpp" />
     <ClCompile Include="Modules\World Module\Code Files\StarSector.cpp" />
-    <ClCompile Include="Code Files\ResourceType.cpp" />
+    <ClCompile Include="Code Files\Space Colony.cpp" />
+    <ClCompile Include="Code Files\ConstructType.cpp" />
     <ClCompile Include="Modules\World Module\Code Files\Galaxy.cpp" />
+    <ClCompile Include="Code Files\CombatStats.cpp" />
+    <ClCompile Include="Modules\Combat Module\Code Files\CombatFrame.cpp" />
+    <ClCompile Include="Modules\Combat Module\Code Files\CombatInstance.cpp" />
   </ItemGroup>
 </Project>

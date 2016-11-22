@@ -1,146 +1,150 @@
 #include "Fleet.h"
-#include <unordered_set>
 
 using namespace Space_Colony;
 
 Space_Colony::Fleet::Fleet()
-	: faction(( faction_type ) Game_Factions::no_faction) {}
+	: Fleet(Game_Factions::no_faction, "Unnamed Fleet", 0, 0, 0) {}
 
 Space_Colony::Fleet::Fleet(const Fleet & orig)
-	: Fleet(orig, orig.faction) {}
+	: Fleet(orig.faction, orig.name, orig.fuel, orig.ships, orig.cargo) {}
 
-Space_Colony::Fleet::Fleet(const Fleet & orig, const faction_type fctn)
-	: Fleet(orig.faction, orig.ships, orig.cargo, orig.name) {}
+Space_Colony::Fleet::Fleet(const faction_type fctn, const std::string & nm,
+						   const size_t fl, const ShipTypeCounter & shps,
+						   const ResourceTypeCounter & crg)
+	: faction(fctn), name(nm), fuel(fl), ships(shps), cargo(crg) {}
 
-Space_Colony::Fleet::Fleet(const faction_type fctn, const TypeCounter & shps, const TypeCounter & crg, const std::string & nm)
-	: name(nm), faction(fctn), ships(shps), cargo(crg) {}
-
-std::unordered_set<Fleet *> Pooled_Fleet_Pointers;
-
-FleetRef Space_Colony::Fleet::create() {
-	FleetRef res(new Fleet());
-	Pooled_Fleet_Pointers.insert(res);
-	return res;
-}
-
-FleetRef Space_Colony::Fleet::create(const Fleet & orig) {
-	FleetRef res(new Fleet(orig));
-	Pooled_Fleet_Pointers.insert(res);
-	return res;
-}
-
-FleetRef Space_Colony::Fleet::create(const Fleet & orig, const faction_type fctn) {
-	FleetRef res(new Fleet(orig, fctn));
-	Pooled_Fleet_Pointers.insert(res);
-	return res;
-}
-
-FleetRef Space_Colony::Fleet::create(const faction_type fctn, const TypeCounter & shps, const TypeCounter & crg, const std::string & nm) {
-	FleetRef res(new Fleet(fctn, shps, crg, nm));
-	Pooled_Fleet_Pointers.insert(res);
-	return res;
-}
-
-bool Space_Colony::Fleet::isPooled(Fleet * const ptr) {
-	return Pooled_Fleet_Pointers.count(ptr) != 0;
-}
-
-bool Space_Colony::Fleet::deleteFleet(Fleet * const ptr) {
-	return Pooled_Fleet_Pointers.erase(ptr) != 0;
-}
-
-TypeCounter Space_Colony::Fleet::getShipsByTags(const ShipType::RollTagSet & tags, const ShipType::RollTagSet & exclude) const {
-	TypeCounter res(ships);
-	for (auto iter(ships.begin()), end(ships.end()); iter != end; ++iter) {
-		for (auto tag_iter(tags.begin()), tag_end(tags.end()); tag_iter != tag_end; ++tag_iter)
-			//Check all include tags.
-			if (ShipType::getType(iter->first).world.rollTags.count(*tag_iter) == 0) {
-				//This tag is not included.
-				res.setCounter(iter->first, 0);
-				break;
-			}
-		if (res.getCounter(iter->first) == 0)
-			//This type has already been removed.
-			for (auto exclude_iter(tags.begin()), exclude_end(tags.end()); exclude_iter != exclude_end; ++exclude_iter)
-				//Check all include tags.
-				if (ShipType::getType(iter->first).world.rollTags.count(*exclude_iter) != 0) {
-					//This tag is not included.
-					res.setCounter(iter->first, 0);
-					break;
-				}
-	}
-	return res;
-}
-
-const TypeCounter & Space_Colony::Fleet::getShips() const {
+const Fleet::ShipTypeCounter & Space_Colony::Fleet::getShips() const {
 	return ships;
 }
 
-TypeCounter Space_Colony::Fleet::setShips(const TypeCounter & shps) {
-	TypeCounter res(ships);
-	ships = shps;
-	if (getCargoCapacity() < getCargoVolume()) {
-		//The new capacity is less than the sum of the cargo
-		ships = res;
-		throw std::exception("New ships cause cargo capacity to exceed.");
+Fleet::ShipTypeCounter Space_Colony::Fleet::setShips(
+	const ShipTypeCounter & shps, const ShipTypeVector &typs,
+	const ResourceTypeVector &rsrc) {
+	//Save the ships as the result.
+	ShipTypeCounter res(ships);
+	if (!shps.isPos())
+		//If the new counter is not positive throw an error.
+		throw Invalid_Counter_Exception;
+	else {
+		//Assign the new ships.
+		ships = shps;
+		//Check if the new cargo capacity is bellow the cargo volume.
+		if (getCargoCapacity(typs) < getCargoVolume(rsrc)) {
+			//If the new capacity is less than the volume...
+			//Reset the ships counter.
+			ships = res;
+			//Throw an error.
+			throw Cargo_Capacity_Exceeded;
+			//Check if the new fuel capacity is bellow the fuel quantity.
+		} else if (getFuelCapacity(typs) < fuel) {
+			//If the new capacity is less than the fuel quantity...
+			//Reset the ships counter.
+			ships = res;
+			//Throw an error.
+			throw Fuel_Capacity_Exceeded;
+		}
 	}
-	if (getFuelCapacity() < fuel) {
-		//The new capacity is less than the sum of the cargo
-		ships = res;
-		throw std::exception("New ships cause fuel capacity to exceed.");
-	}
+	//Return the old ships counter.
 	return res;
 }
 
-size_t Space_Colony::Fleet::setShip(const __int32 type, const size_t val, size_t *const returned_fuel) {
-	size_t res(ships.getCounter(type));
-	if (val < res) {
-		//ships are going down.
-		if ((getCargoCapacity() + (ShipType::getType(type).world.cargo_capacity * ((( __int32 ) val) - res))) < cargo.sum())
-			//The new capacity is less than the sum of the cargo
-			throw std::exception("New ships would cause cargo capacity to exceed.");
-		//Calculate the amount of fuel the removed Ships take with them.
-		size_t retFuel(fuel * ShipType::getType(type).world.fuel_capacity
-					   * (res - val) / getFuelCapacity());
-		if (returned_fuel != nullptr)
-			//Return the fuel.
-			*returned_fuel = retFuel;
-		//Remove the fuel.
-		fuel -= retFuel;
+const Fleet::ResourceTypeCounter & Space_Colony::Fleet::getCargo() const {
+	return cargo;
+}
+
+Fleet::ResourceTypeCounter Space_Colony::Fleet::setCargo(
+	const ResourceTypeCounter & crg, const ShipTypeVector & shps,
+	const ResourceTypeVector & rsrc) {
+	//Save the cargo as the result.
+	ResourceTypeCounter res(cargo);
+	if (!crg.isPos())
+		//If the new counter is not positive throw an error.
+		throw Invalid_Counter_Exception;
+	else {
+		//Assign the new cargo.
+		cargo = crg;
+		//Check if the cargo capacity is bellow the new cargo volume.
+		if (getCargoCapacity(shps) < getCargoVolume(rsrc)) {
+			//If the new capacity is less than the volume...
+			//Reset the ships counter.
+			cargo = res;
+			//Throw an error.
+			throw Cargo_Capacity_Exceeded;
+		}
 	}
-	//Set the counter for the ShipType.
-	ships.setCounter(type, val);
+	//Return the old cargo counter.
 	return res;
 }
 
-double Space_Colony::Fleet::getRange() const {
-	return fuel / (getFleetMass() * getFuelEffeciency());
-}
-
-ShipType::RollTagSet Space_Colony::Fleet::getRollTags() const {
-	ShipType::RollTagSet res;
-	for (TypeCounter::const_iterator iter(ships.begin()), end(ships.end()); iter != end; ++iter)
-		//Iterate over all counters and add their tags to the return set.
-		res.insert(ShipType::getType(iter->first).world.rollTags.begin(), ShipType::getType(iter->first).world.rollTags.end());
+size_t Space_Colony::Fleet::setShips(const size_t key, const size_t val,
+									 const ShipTypeVector & shps, const ResourceTypeVector & rsrc) {
+	//Save the ship counter as the result.
+	size_t res(ships.getCounter(key));
+	//Set the new ship counter.
+	ships.setCounter(key, val);
+	//Check if the cargo capacity is bellow the new cargo volume.
+	if (getCargoCapacity(shps) < getCargoVolume(rsrc)) {
+		//If the new capacity is less than the volume...
+		//Reset the ship counter.
+		ships.setCounter(key, res);
+		//Throw an error.
+		throw Cargo_Capacity_Exceeded;
+		//Check if the fuel capacity is bellow the new fuel quantity.
+	} else if (getFuelCapacity(shps) < fuel) {
+		//If the capacity is less than the new fuel quantity...
+		//Reset the ships counter.
+		ships.setCounter(key, res);
+		//Throw an error.
+		throw Fuel_Capacity_Exceeded;
+	}
+	//Return the old ship counter.
 	return res;
 }
 
-double Space_Colony::Fleet::getFuelEffeciency() const {
+size_t Space_Colony::Fleet::setCargo(const size_t key, const size_t val,
+									 const ShipTypeVector & shps, const ResourceTypeVector & rsrc) {
+	//Save the cargo counter as the result.
+	size_t res(cargo.getCounter(key));
+	//Set the new cargo counter.
+	cargo.setCounter(key, val);
+	//Check if the new cargo capacity is bellow the cargo volume.
+	if (getCargoCapacity(shps) < getCargoVolume(rsrc)) {
+		//If the new capacity is less than the volume...
+		//Reset the cargo counter.
+		cargo.setCounter(key, res);
+		//Throw an error.
+		throw Cargo_Capacity_Exceeded;
+	}
+	//Return the old cargo counter.
+	return res;
+}
+
+double Space_Colony::Fleet::getRange(const ShipTypeVector & shps, const ResourceTypeVector & rsrc) const {
+	//Return the fuel quantity divided by the fuel consumption per range unit.
+	return fuel / (
+		//Fuel consumption per range unit = Mass-Of-Fleet x Units-Of-Fuel-Per-Mass-Unit
+		getFleetMass(shps, rsrc) * getFuelEfficiency(shps));
+}
+
+double Space_Colony::Fleet::getFuelEfficiency(const ShipTypeVector & shps) const {
+	//Create a 0 fuel efficiency as a result.
 	double res(0);
-	//The total number of Ships in this Fleet.
-	double shipsSum(ships.sum());
-	for (TypeCounter::const_iterator iter(ships.begin()), end(ships.end()); iter != end; ++iter)
-		//Iterate each ShipType and add it's fuel efficiency proportional
-		//to it's proportion of the Fleet.
-		res += ShipType::getType(iter->first).world.fuel_efficiency * iter->second / shipsSum;
-	return res;
+	//Iterate all ship types.
+	for (auto iter(ships.begin()), end(ships.end()); iter != end; ++iter)
+		//Add the sum of fuel efficiencies of all the ships of this type.
+		res += shps.at(iter->first).world.fuelEfficiency * iter->second;
+	//Return the average fuel efficiency of this Fleet.
+	return res / ships.sum();
 }
 
-size_t Space_Colony::Fleet::getFuelCapacity() const {
+size_t Space_Colony::Fleet::getFuelCapacity(const ShipTypeVector & shps) const {
+	//Create a 0 fuel capacity as a result.
 	size_t res(0);
-	for (TypeCounter::const_iterator iter(ships.begin()), end(ships.end()); iter != end; ++iter)
-		//Iterate each ShipType and add the fuel capacity of all the ships of that type.
-		res += ShipType::getType(iter->first).world.fuel_capacity * iter->second;
+	//Iterate all ship types.
+	for (auto iter(ships.begin()), end(ships.end()); iter != end; ++iter)
+		//Add the sum of fuel capacity of all the ships of this type.
+		res += shps.at(iter->first).world.fuelCapacity * iter->second;
+	//Return the total fuel capacity of this Fleet.
 	return res;
 }
 
@@ -148,170 +152,90 @@ size_t Space_Colony::Fleet::getFuel() const {
 	return fuel;
 }
 
-size_t Space_Colony::Fleet::setFuel(size_t fl) {
+size_t Space_Colony::Fleet::setFuel(const size_t fl, const ShipTypeVector & shps) {
+	//Save the fuel value as a result.
 	size_t res(fuel);
-	if (fl > getFuelCapacity())
-		throw std::exception("The new fuel exceeds the fuel capacity.");
+	//Check if the new fuel value is greater than the fuel capacity.
+	if (getFuelCapacity(shps) < fl)
+		//Throw an error.
+		throw Fuel_Capacity_Exceeded;
+	//Set the new fuel value.
 	fuel = fl;
+	//Return the old fuel value.
 	return res;
 }
 
-size_t Space_Colony::Fleet::incFuel(__int32 fl) {
-	return setFuel(fuel + fl);
+size_t Space_Colony::Fleet::incFuel(const __int32 inc, const ShipTypeVector & shps) {
+	//Set the fuel to the current fuel plus the increment.
+	return setFuel(fuel + inc, shps);
 }
 
-size_t Space_Colony::Fleet::getCargoCapacity() const {
+size_t Space_Colony::Fleet::getCargoCapacity(const ShipTypeVector & shps) const {
+	//Create a 0 capacity as a result.
 	size_t res(0);
-	for (TypeCounter::const_iterator iter(ships.begin()), end(ships.end()); iter != end; ++iter)
-		//Iterate each ShipType and add the cargo capacity of all the ships of that type.
-		res += ShipType::getType(iter->first).world.cargo_capacity * iter->second;
-	return res;
-}
-
-size_t Space_Colony::Fleet::getCargoVolume() const {
-	size_t res(0);
-	for (auto iter(cargo.begin()), end(cargo.end()); iter != end; ++iter)
-		//Iterate each ResourceType and add the volume of all the cargo of that type.
-		res += (*( ResourceType * ) iter->first).volume * iter->second;
-	return res;
-}
-
-size_t Space_Colony::Fleet::getCargoMass() const {
-	size_t res(0);
-	for (auto iter(cargo.begin()), end(cargo.end()); iter != end; ++iter)
-		//Iterate each ResourceType and add the mass of all the cargo of that type.
-		res += (*( ResourceType * ) iter->first).mass * iter->second;
-	return res;
-}
-
-size_t Space_Colony::Fleet::getFleetMass() const {
-	size_t res(0);
+	//Iterate all ship types.
 	for (auto iter(ships.begin()), end(ships.end()); iter != end; ++iter)
-		//Iterate each ShipType and add the mass of all the ships of that type.
-		res += ShipType::getType(iter->first).world.mass * iter->second;
-	//Return the mass of all the Ships and the cargo combined.
-	return res + getCargoMass();
-}
-
-const TypeCounter & Space_Colony::Fleet::getCargo() const {
-	return cargo;
-}
-
-TypeCounter Space_Colony::Fleet::setCargo(const TypeCounter & crg) {
-	TypeCounter res(cargo);
-	cargo = crg;
-	if (getCargoVolume() > getCargoCapacity()) {
-		//Reset the cargo.
-		cargo = res;
-		throw std::exception("The new cargo exceeds the capacity of the Fleet.");
-	}
+		//Add the sum of all cargo capaicty for the ships of this ship type.
+		res += shps.at(iter->first).world.cargoCapacity * iter->second;
+	//Return the total cargo capacity for this Fleet.
 	return res;
 }
 
-size_t Space_Colony::Fleet::setCargo(const __int32 crg, const __int32 vl) {
-	size_t res(cargo.getCounter(crg));
-	//Set the new cargo.
-	cargo.setCounter(crg, vl);
-	if (getCargoVolume() > getCargoCapacity()) {
-		//Reset the cargo.
-		cargo.setCounter(crg, res);
-		throw std::exception("The new cargo exceeds the capacity of the Fleet.");
-	}
+size_t Space_Colony::Fleet::getCargoVolume(const ResourceTypeVector & rsrc) const {
+	//Create a 0 volume as a result.
+	size_t res(0);
+	//Iterate all cargo types.
+	for (auto iter(cargo.begin()), end(cargo.end()); iter != end; ++iter)
+		//Add the sum volume of all the cargo units of this type.
+		res += rsrc.at(iter->first).volume * iter->second;
+	//Return the total cargo volume for this Fleet.
 	return res;
 }
 
-size_t Space_Colony::Fleet::incCargo(const __int32 crg, const __int32 vl) {
-	return setCargo(crg, cargo.getCounter(crg) + vl);
+size_t Space_Colony::Fleet::getCargoMass(const ResourceTypeVector & rsrc) const {
+	//Create a 0 mass as a result.
+	size_t res(0);
+	//Iterate all cargo types.
+	for (auto iter(cargo.begin()), end(cargo.end()); iter != end; ++iter)
+		//Add the sum mass of all the cargo units of this type.
+		res += rsrc.at(iter->first).mass * iter->second;
+	//Return the total cargo mass for this Fleet.
+	return res;
+}
+
+size_t Space_Colony::Fleet::getShipMass(const ShipTypeVector & shps) const {
+	//Create a 0 mass as a result.
+	size_t res(0);
+	//Iterate all ship types.
+	for (auto iter(ships.begin()), end(ships.end()); iter != end; ++iter)
+		//Add the sum mass of all the ships of this type.
+		res += shps.at(iter->first).world.mass * iter->second;
+	//Return the total ship mass for this Fleet.
+	return res;
+}
+
+size_t Space_Colony::Fleet::getFleetMass(const ShipTypeVector & shps, const ResourceTypeVector & rsrc) const {
+	//Return the sum of the ship mass and cargo mass of this Fleet.
+	return getShipMass(shps) + getCargoMass(rsrc);
 }
 
 Fleet & Space_Colony::Fleet::operator=(const Fleet & right) {
+	faction = right.faction;
 	name = right.name;
 	fuel = right.fuel;
-	faction = right.faction;
 	ships = right.ships;
 	cargo = right.cargo;
 	return *this;
 }
 
 bool Space_Colony::Fleet::operator==(const Fleet & right) const {
-	return (this == &right)
-		|| (name == right.name
-			&& fuel == right.fuel
-			&& faction == right.faction
-			&& ships == right.ships
-			&& cargo == right.cargo);
+	return faction == right.faction
+		&& name == right.name
+		&& fuel == right.fuel
+		&& ships == right.ships
+		&& cargo == right.cargo;
 }
 
 bool Space_Colony::Fleet::operator!=(const Fleet & right) const {
 	return !operator==(right);
-}
-
-Space_Colony::FleetRef::FleetRef()
-	: instance(nullptr) {}
-
-Space_Colony::FleetRef::FleetRef(Fleet *const inst)
-	: instance(inst) {
-	if (!check())
-		throw std::exception("The pointer is invalid.");
-}
-
-bool Space_Colony::FleetRef::check() const {
-	return Fleet::isPooled(instance);
-}
-
-void Space_Colony::FleetRef::unbind() {
-	instance = nullptr;
-}
-
-FleetRef & Space_Colony::FleetRef::operator=(Fleet * const right) {
-	if (!Fleet::isPooled(right))
-		throw std::exception("The pointer is invalid.");
-	instance = right;
-	return *this;
-}
-
-bool Space_Colony::FleetRef::operator==(Fleet * const right) const {
-	if (!check() || !Fleet::isPooled(right))
-		throw std::exception("The pointer is invalid.");
-	return instance == right;
-}
-
-bool Space_Colony::FleetRef::operator!=(Fleet * const right) const {
-	return !operator==(right);
-}
-
-Fleet & Space_Colony::FleetRef::operator*() {
-	if (!check())
-		throw std::exception("The pointer is invalid.");
-	return *instance;
-}
-
-const Fleet & Space_Colony::FleetRef::operator*() const {
-	if (!check())
-		throw std::exception("The pointer is invalid.");
-	return *instance;
-}
-
-Fleet * Space_Colony::FleetRef::operator->() {
-	if (!check())
-		throw std::exception("The pointer is invalid.");
-	return instance;
-}
-
-const Fleet * Space_Colony::FleetRef::operator->() const {
-	if (!check())
-		throw std::exception("The pointer is invalid.");
-	return instance;
-}
-
-Space_Colony::FleetRef::operator Fleet *() {
-	if (!check())
-		throw std::exception("The pointer is invalid.");
-	return instance;
-}
-
-Space_Colony::FleetRef::operator const Fleet *() const {
-	if (!check())
-		throw std::exception("The pointer is invalid.");
-	return instance;
 }

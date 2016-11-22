@@ -2,17 +2,16 @@
 
 #include "Galactic.h"
 #include "TypeCounter.h"
-#include "Planetary\ConstructType.h"
+#include "Planetary\Construct.h"
+#include <string>
 #include <vector>
 #include <list>
-#include <stdexcept>
-#include <string>
 
 namespace Space_Colony {
 
 	namespace World_Module {
 
-		namespace Galacitc {
+		namespace Galactic {
 
 			/*
 			A Planet has a collection of resource and can support a set number
@@ -24,56 +23,67 @@ namespace Space_Colony {
 
 				Planet();
 				Planet(const Planet &orig);
-				Planet(const Planet &orig, const faction_type fctn);
-				Planet(const Planet &orig, const std::string &nm);
-				Planet(const Planet &orig, const faction_type fctn, const std::string &nm);
-				Planet(const faction_type fctn, const std::string &nm, const TypeCounter & rsrcs, const TypeCounter & ntrlCpcty,
-					   const size_t bldngs);
-				Planet(const faction_type fctn, const std::string &nm, const TypeCounter & rsrcs, const TypeCounter & ntrlCpcty,
-					   const ConstructVector & bldngs, const ConstructList & stlts);
+				Planet(const faction_type fctn, const std::string &nm,
+					   const TypeCounter &rsrcs, const TypeCounter &ntrlCpcty,
+					   const size_t sts);
+				Planet(const faction_type fctn, const std::string &nm,
+					   const TypeCounter &rsrcs, const TypeCounter &ntrlCpcty,
+					   const ConstructVector sts, const ConstructList stlts);
 
+				static const size_t Resource_Capacity_Exceeded = 1,
+					Site_Size_Exception = 2,
+					Invalid_Counter_Exception = 3;
+
+				const TypeCounter & getResources() const;
+				TypeCounter setResources(const TypeCounter &rsrcs,
+										 const ConstructTypeVector types);
+				const TypeCounter & getNaturalCapacity() const;
+				TypeCounter setNaturalCapacity(const TypeCounter &ntrlCpcty,
+											   const ConstructTypeVector types);
+				const ConstructVector & getSites() const;
+				Planetary::Construct & getSite(const size_t site);
+				const Planetary::Construct & getSite(const size_t site) const;
+				ConstructVector setSites(const ConstructVector &sts,
+										 const ConstructTypeVector types);
+				ConstructList & getSatellites();
+				const ConstructList & getSatellites() const;
+				ConstructList setSatellites(const ConstructList &stlts,
+											const ConstructTypeVector types);
 				/*
-				Removes all invalid Constructs.*/
-				void clean();
+				Returns the old counter for the passed resource and sets the
+				new counter.*/
+				size_t setResource(const size_t resource_type, const size_t val,
+								   const ConstructTypeVector types);
+				/*
+				Adds the passed Construct to the list of Satellites on the Planet.*/
+				void addSatellite(const Planetary::Construct &cnstrct);
+				/*
+				Removes the passed Construct from the list of Satellites on the Planet.*/
+				void removeSatellite(const Planetary::Construct &cnstrct,
+									 const ConstructTypeVector types);
 				/*
 				True if the Planet is populated by a Super Construct.*/
 				bool isSuperConstruct() const;
 				/*
-				Returns an iterator to the construct and True if it was found.*/
-				std::pair<Planetary::Construct *const, bool> findConstruct(const Planetary::Construct &cnstrct);
+				Returns the old natural capacity for the passed resources type
+				and sets the new capacity.*/
+				size_t setNaturalCapacity(const size_t resource_type, const size_t val,
+										  const ConstructTypeVector types);
 				/*
-				Returns an iterator to the construct and True if it was found.*/
-				std::pair<const Planetary::Construct *const, bool> findConstruct(const Planetary::Construct &cnstrct) const;
+				Returns the combined capacity for resources for the Planet and
+				all its Constructs.*/
+				TypeCounter getResourceCapacity(const ConstructTypeVector types) const;
 				/*
-				Returns all the Constructs which are active and whose types
-				have and exclude the passed tags.*/
-				ConstructList getConstructsByTags(const Planetary::ConstructType::ConstructTags &tags, 
-												  const Planetary::ConstructType::ConstructTags &exclude) const;
-				/*
-									Returns the combined tags of all the Constructs on this Planet.*/
-				Planetary::ConstructType::ConstructTags getTags() const;
-				/*
-				Returns the combined capacity for resource for the Planet and all its Constructs.*/
-				TypeCounter getResourceCapacity() const;
-				/*
-				Returns the capacity for this resource for the Planet and all its Constructs.*/
-				size_t getResourceCapacity(const __int32 rsrc) const;
-				const TypeCounter & getResources() const;
-				TypeCounter setResources(const TypeCounter &rsrcs);
-				size_t setResources(const __int32 rsrcs, const size_t val);
-				TypeCounter incResources(TypeCounter rsrcs);
-				size_t incResources(const __int32 rsrcs, const size_t val);
-				const ConstructVector & getSites() const;
+				Returns the capacity for this resource for the Planet and all
+				its Constructs.*/
+				size_t getResourceCapacity(const size_t resource_type,
+										   const ConstructTypeVector types) const;
 				/*
 				True if the passed index is filled.*/
-				bool isFilled(const size_t index) const;
+				bool isFilled(const size_t site) const;
 				/*
-				Clears all Construct in this Site.*/
-				void emptySite(const size_t index);
-				Planetary::Construct & getSite(const size_t index);
-				const Planetary::Construct & getSite(const size_t index) const;
-				const ConstructList & getSatellites() const;
-				ConstructList & getSatellites();
+				Clears the Construct in this Site.*/
+				void emptySite(const size_t site);
 
 				/*
 				The faction alignment of this Planet.*/
@@ -91,7 +101,8 @@ namespace Space_Colony {
 				A TypeCounter of all the resources on this Planet.*/
 				TypeCounter resources;
 				/*
-				A TypeCounter of the natural capacities for resources on this Planet.*/
+				A TypeCounter of the natural capacities for resources units on
+				this Planet.*/
 				TypeCounter naturalCapacity;
 				/*
 				A collection of all the Constructs built on this Planet.*/

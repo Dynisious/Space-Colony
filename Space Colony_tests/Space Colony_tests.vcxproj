@@ -99,7 +99,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Users\danie_000\Documents\GitHub\Space Colony\Space Colony\Debug;$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>TypeCounter.obj;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>TypeCounter.obj;Fleet.obj;ResourceType.obj;ShipType.obj;ConstructType.obj;Construct.obj;Planet.obj;SolarSystem.obj;StarSector.obj;Galaxy.obj;CombatStats.obj;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

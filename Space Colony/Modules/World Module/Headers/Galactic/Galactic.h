@@ -1,14 +1,14 @@
 #pragma once
 
-#include "..\World Module.h"
+#include "World Module\Headers\World Module.h"
 
 namespace Space_Colony {
 
 	namespace World_Module {
 
 		/*
-		A namespace for all things within the influence of a Galaxy.*/
-		namespace Galacitc {}
+		A namespce for all objects which are a part of a Galaxy.*/
+		namespace Galactic {}
 
 	}
 

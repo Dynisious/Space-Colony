@@ -1,15 +1,16 @@
 #pragma once
 
 #include "Galactic.h"
+#include "Fleet.h"
 #include "SolarSystem.h"
+#include "TypeCounter.h"
 #include <vector>
-#include <string>
 
 namespace Space_Colony {
 
 	namespace World_Module {
 
-		namespace Galacitc {
+		namespace Galactic {
 
 			/*
 			A StarSector is a group of indexed SolarSystems.*/
@@ -21,36 +22,29 @@ namespace Space_Colony {
 				StarSector(const StarSector &orig);
 				StarSector(const std::string &nm, const SystemVector &systms);
 
-				SystemVector & getSystems(const size_t index);
-				const SystemVector & getSystems(const size_t index) const;
-				SolarSystem & getSolarSystem(const size_t index);
-				const SolarSystem & getSolarSystem(const size_t index) const;
-				/*
-				Cleans all the SolarSystems of this StarSector.*/
-				void clean();
 				/*
 				Returns the faction for the StarSector.*/
-				faction_type getFaction() const;
+				faction_type getFaction(const FleetVector &flts) const;
 				/*
-				Returns the collective resources of all the Planets of all the
-				Planets in the SolarSystems of this StarSector.*/
+				Returns the collective resource units of all the Planets of all
+				the Planets in the SolarSystems of this StarSector.*/
 				TypeCounter getResources() const;
 				/*
-				Returns the collective resources of all the Planets of all the
-				Planets in the SolarSystems of this StarSector of the resource type.*/
-				size_t getResource(const __int32 rsrc) const;
+				Returns the collective resource units of all the Planets of all
+				the Planets in the SolarSystems of this StarSector of the
+				resource type.*/
+				size_t getResource(const size_t resource_type) const;
 				/*
 				Performs a single iteration on each SolarSystem in this StarSector.*/
-				void iterate();
+				void iterate(const FleetVector &flts, const ConstructTypeVector &cnstrcts);
 
+				/*
+				A String representing the name of the StarSector.*/
 				std::string name;
 
 				StarSector & operator=(const StarSector &right);
 				bool operator==(const StarSector &right) const;
 				bool operator!=(const StarSector &right) const;
-
-				operator SystemVector & ();
-				operator const SystemVector & () const;
 
 			private:
 				/*
@@ -58,6 +52,8 @@ namespace Space_Colony {
 				SystemVector systems;
 
 			};
+
+			typedef std::vector<StarSector> SectorVector;
 
 		}
 

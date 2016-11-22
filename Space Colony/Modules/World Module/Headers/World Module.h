@@ -5,7 +5,7 @@
 namespace Space_Colony {
 
 	/*
-	A namespace for objects moving and interacting within the world Module.*/
+	A namespace for all objects in the World Module.*/
 	namespace World_Module {}
 
 }
